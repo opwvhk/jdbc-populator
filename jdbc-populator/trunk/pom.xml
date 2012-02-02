@@ -7,7 +7,7 @@
 		<version>2</version>
 	</parent>
 	<groupId>nl.opk</groupId>
-	<artifactId>jdbc-initializer</artifactId>
+	<artifactId>jdbc-populator</artifactId>
 	<packaging>jar</packaging>
 	<version>0.1-SNAPSHOT</version>
 	<name>JDBC Initializer</name>
