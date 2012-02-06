@@ -9,7 +9,7 @@
 	<groupId>net.sf.opk</groupId>
 	<artifactId>jdbc-populator</artifactId>
 	<packaging>jar</packaging>
-	<version>0.1-SNAPSHOT</version>
+	<version>1.0-SNAPSHOT</version>
 	<name>JDBC Populator</name>
 	<description><![CDATA[
 		Web Fragment that provides the same functionality as Hibernate, when it detects that there is a resource named
