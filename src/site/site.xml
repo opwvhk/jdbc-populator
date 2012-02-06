@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/DECORATION/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.1.0 http://maven.apache.org/xsd/decoration-1.1.0.xsd">
+	<bannerLeft>
+		<name>${project.name}</name>
+		<src>./images/project_logo.png</src>
+		<href>${project.url}</href>
+	</bannerLeft>
+	<body>
+		<links>
+			<item name="Instant Developer Experience" href="../embedded-glassfish-web-plugin/instant_developer_experience.html"/>
+		</links>
+		<menu name="Overview">
+			<!-- This can be a report. -->
+			<item name="Introduction" href="index.html"/>
+			<item name="FAQ" href="faq.html"/>
+		</menu>
+	</body>
+</project>

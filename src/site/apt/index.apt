@@ -1,0 +1,27 @@
+	---
+	Introduction
+	---
+	Oscar Westra van Holthe - Kind
+	---
+	2012-02-03
+	---
+
+JDBC Populator: Introduction
+
+  The JDBC populator is a JavaEE&\ 6 web fragment that detects the following condition:
+
+  * There is a resource named <<<import.sql>>> in the root of the classpath.
+
+  * There is a single persistence unit.
+
+  []
+
+  If both conditions are met, the JDBC populator opens a database connection (prefering a JTA datasource over a non-JTA
+  datasource) and executers all SQL statements in the resource <<<import.sql>>>.
+
+  This enables the creation of an <Instant Developer Experience>, by adding the web fragment as a dependency when
+  running a web application in a JavaEE&\ 6 container. For example using the
+  {{{../embedded-glassfish-web-plugin/}Embedded GlassFish Web Plugin}}. Optionally, the web fragment can be
+  added as a test dependency: the plugin can use the test classpath when running GlassFish. This ensures that the web
+  fragment is not part of the <<<.war>>> file.
+
