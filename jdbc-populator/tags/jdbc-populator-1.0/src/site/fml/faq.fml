@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faqs xmlns="http://maven.apache.org/FML/1.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd" title="Frequently Asked Questions" toplink="false">
+	<part id="general">
+		<title>General</title>
+		<faq id="configuration">
+			<question>Are there any configuration options?</question>
+			<answer>
+				<p>No. This is on purpose.</p>
+				<p>
+					In fact, this web fragment is not meant to be used in a production system. Its intended use is to
+					populate an in-memory database. As such, the environment is controlled so much that configuration
+					is hardly ever needed.
+				</p>
+			</answer>
+		</faq>
+		<faq id="multiple_persistence_units">
+			<question>Can the JDBC populator handle multiple persistence units?</question>
+			<answer>
+				<p>
+					No. Two different persistence units most likely use two different databases (and datasources). They
+					would therefore also require two different import files. However, as the JDBC Populator was designed
+					to be a drop-in replacement for <code>import.sql</code> + Hibernate, this is not an option.
+				</p>
+			</answer>
+		</faq>
+		<faq id="plain_datasources">
+			<question>Can the JDBC Populator handle datasources that are not tied to a persistence unit?</question>
+			<answer>
+				<p>
+					No. In this situation it is not possible to detect the datasource. The reason is that application
+					servers try to be 'helpful' by providing a few datasources of their own. GlassFish, for example,
+					provides datasources named __default and __TimerPool (and even though the latter is not supposed to
+					be used, it is still available in the JNDI namespace of web applications).
+				</p>
+			</answer>
+		</faq>
+		<faq id="import_sql">
+			<question>Does this web fragment use import.sql like Hibernate uses import.sql?</question>
+			<answer>
+				<p>
+					For in-memory databases, there is only one difference (an improvement). These are the differences:
+				</p>
+				<ol>
+					<li>
+						Unlike Hibernate, the JDBC Populator <em>can</em> handle SQL statements that span multiple
+						lines. Only multiple statements per line are not supported.
+					</li>
+					<li>The file <code>import.sql</code> is always executed; not only when the schema is created.</li>
+				</ol>
+			</answer>
+		</faq>
+	</part>
+</faqs>

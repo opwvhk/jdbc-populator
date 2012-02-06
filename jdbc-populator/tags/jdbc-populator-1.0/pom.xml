@@ -1,0 +1,63 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>net.sf.opk</groupId>
+		<artifactId>opk-parent</artifactId>
+		<version>3</version>
+	</parent>
+	<groupId>net.sf.opk</groupId>
+	<artifactId>jdbc-populator</artifactId>
+	<packaging>jar</packaging>
+	<version>1.0</version>
+	<name>JDBC Populator</name>
+	<description><![CDATA[
+		Web Fragment that provides the same functionality as Hibernate, when it detects that there is a resource named
+		<code>import.sql</code> on the classpath.
+	]]></description>
+	<inceptionYear>2012</inceptionYear>
+	<scm>   
+		<connection>scm:svn:svn://svn.code.sf.net/p/opk/code/jdbc-populator/tags/jdbc-populator-1.0</connection>
+		<developerConnection>scm:svn:https://svn.code.sf.net/p/opk/code/jdbc-populator/tags/jdbc-populator-1.0</developerConnection>
+		<url>http://svn.code.sf.net/p/opk/code/jdbc-populator/tags/jdbc-populator-1.0</url>
+	</scm>
+	<properties>
+		<jdk.version>1.6</jdk.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<dependencies>
+		<!-- Needed for test cases; MUST be before the JavaEE6 API -->
+		<dependency>
+			<groupId>org.glassfish.extras</groupId>
+			<artifactId>glassfish-embedded-web</artifactId>
+			<version>3.1.1</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- JavaEE API -->
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-web-api</artifactId>
+			<version>6.0</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymock</artifactId>
+			<version>3.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>2.2.6</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>
