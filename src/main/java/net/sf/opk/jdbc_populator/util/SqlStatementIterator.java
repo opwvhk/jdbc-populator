@@ -12,12 +12,11 @@
  */
 package net.sf.opk.jdbc_populator.util;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PushbackReader;
 import java.io.Reader;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.regex.Pattern;
 
 
 /**
@@ -28,16 +27,13 @@ import java.util.regex.Pattern;
  */
 public class SqlStatementIterator implements Iterator<String>
 {
-	protected static final int BUFFER_SIZE = 1024;
-	private static final Pattern NEWLINE_PATTERN = Pattern.compile("[\n\r]+");
-	private static final String NEWLINE_REPLACEMENT = " ";
-	private PushbackReader reader;
+	private BufferedReader reader;
 	private String nextSqlStatement;
 
 
 	public SqlStatementIterator(Reader input)
 	{
-		reader = new PushbackReader(input, BUFFER_SIZE);
+		reader = input instanceof BufferedReader ? reader : new BufferedReader(input);
 		nextSqlStatement = null;
 	}
 
@@ -75,42 +71,34 @@ public class SqlStatementIterator implements Iterator<String>
 	{
 		StringBuilder statement = new StringBuilder();
 
-		char[] buffer = new char[BUFFER_SIZE]; // The buffer will be set to null if it is no longer needed.
-		int charsRead = 0;
+		String line;
 		//noinspection NestedAssignment
-		while (buffer != null && (charsRead = reader.read(buffer)) > -1)
+		while ((line = reader.readLine()) != null)
 		{
-			int firstSemiOrEnd = charIndexOrEnd(buffer, ';', 0, charsRead);
-			statement.append(buffer, 0, firstSemiOrEnd);
-			if (firstSemiOrEnd < charsRead)
+			statement.append(' ');
+
+			line = line.trim();
+			if (line.endsWith(";"))
 			{
-				reader.unread(buffer, firstSemiOrEnd + 1, charsRead - firstSemiOrEnd - 1);
-				buffer = null;
+				statement.append(line.substring(0, line.length() - 1));
+				break;
+			}
+			else
+			{
+				statement.append(line);
 			}
 		}
 
-		if (charsRead == -1)
+		if (line == null)
 		{
-			// End of input reached. Any buffered characters are trailing characters; skip them.
+			// There was no semi-colon terminated statement.
 			return null;
 		}
 		else
 		{
-			return NEWLINE_PATTERN.matcher(statement).replaceAll(NEWLINE_REPLACEMENT).trim();
+			// Return the statement, skipping the initial space.
+			return statement.substring(1);
 		}
-	}
-
-
-	private int charIndexOrEnd(char[] array, char c, int startIndex, int endIndex)
-	{
-		for (int i = startIndex; i < endIndex; i++)
-		{
-			if (array[i] == c)
-			{
-				return i;
-			}
-		}
-		return endIndex;
 	}
 
 
