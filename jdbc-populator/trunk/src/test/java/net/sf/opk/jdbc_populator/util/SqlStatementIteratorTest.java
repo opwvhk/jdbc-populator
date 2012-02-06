@@ -23,14 +23,13 @@ import static org.junit.Assert.fail;
 public class SqlStatementIteratorTest
 {
 	private static final String STATEMENT1a = "insert into table1 (col1, col2, col3) values";
-	private static final String STATEMENT1b = "  (1, 'value 2', 'value 3')";
+	private static final String STATEMENT1b = "(1, 'value 2', 'value 3')";
 	private static final String STATEMENT2 = "insert into table2 (col) values (2)";
-	private static final String STATEMENT3 = "insert into table2 (col) values (3)";
 	private static final String TRAILING = "foo";
 	private static final String SQL_STREAM1 =
-			STATEMENT1a + "\n" + STATEMENT1b + ";\n" + STATEMENT2 + "; " + STATEMENT3 + ";" + TRAILING;
+			STATEMENT1a + "\n" + STATEMENT1b + ";\n" + STATEMENT2 + ";\n\n" + TRAILING;
 	private static final String SQL_STREAM2 =
-			STATEMENT1a + "\n" + STATEMENT1b + ";\n" + STATEMENT2 + "; " + STATEMENT3 + ";\n\n";
+			STATEMENT1a + "\n" + STATEMENT1b + ";\n" + STATEMENT2 + ";\n\n";
 	private SqlStatementIterator iterator;
 
 
@@ -83,7 +82,6 @@ public class SqlStatementIteratorTest
 		assertTrue(iterator.hasNext());
 		assertEquals(STATEMENT1a + ' ' + STATEMENT1b, iterator.next());
 		assertEquals(STATEMENT2, iterator.next());
-		assertEquals(STATEMENT3, iterator.next());
 		assertFalse(iterator.hasNext());
 		try
 		{
@@ -104,7 +102,6 @@ public class SqlStatementIteratorTest
 		assertTrue(iterator.hasNext());
 		assertEquals(STATEMENT1a + ' ' + STATEMENT1b, iterator.next());
 		assertEquals(STATEMENT2, iterator.next());
-		assertEquals(STATEMENT3, iterator.next());
 		assertFalse(iterator.hasNext());
 		try
 		{
