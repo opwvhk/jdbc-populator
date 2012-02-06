@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>net.sf.opk</groupId>
 		<artifactId>opk-parent</artifactId>
-		<version>2</version>
+		<version>3</version>
 	</parent>
 	<groupId>net.sf.opk</groupId>
 	<artifactId>jdbc-populator</artifactId>
