@@ -10,18 +10,14 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package net.sf.opk.jdbc_populator;
+package net.sf.opk.populator;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +26,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletContextEvent;
@@ -44,9 +41,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import net.sf.opk.jdbc_populator.util.OnceIterable;
-import net.sf.opk.jdbc_populator.util.SkipCommentsReader;
-import net.sf.opk.jdbc_populator.util.SqlStatementIterator;
+import net.sf.opk.populator.sql.ImportSqlPopulator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -106,23 +101,18 @@ public class ContextListener implements ServletContextListener
 	{
 		try
 		{
-			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-			InputStream sqlImportStream = classLoader.getResourceAsStream("import.sql");
-
-			if (sqlImportStream != null)
-			{
-				String datasource = findDataSource();
-				if (datasource == null)
-				{
-					LOGGER.info("No unambiguous datasource found; not populating the database.");
-				}
-				else
-				{
-					LOGGER.info(String.format("Found datasource %s to populate the database", datasource));
-					populateDatabase(datasource, sqlImportStream);
-				}
-			}
-		}
+            String datasource = findDataSource();
+            if (datasource == null)
+            {
+                LOGGER.info("No unambiguous datasource found; not populating the database.");
+            }
+            else
+            {
+                LOGGER.info(String.format("Found datasource %s to populate the database", datasource));
+                JDBCPopulator populator = getJDBCPopulator();
+                populateDatabase(datasource, populator);
+            }
+        }
 		catch (Exception e)
 		{
 			LOGGER.log(Level.WARNING, "Something went wrong.", e);
@@ -130,7 +120,13 @@ public class ContextListener implements ServletContextListener
 	}
 
 
-	private String findDataSource()
+    private JDBCPopulator getJDBCPopulator() {
+
+        return new ImportSqlPopulator();
+    }
+
+
+    private String findDataSource()
 			throws IOException, URISyntaxException, SAXException, ParserConfigurationException, XPathExpressionException
 	{
 		Map<String, String> jtaDataSourcesByPersistenceUnits = new HashMap<String, String>();
@@ -218,28 +214,29 @@ public class ContextListener implements ServletContextListener
 	}
 
 
-	protected void populateDatabase(String jndiName, InputStream sqlStream) throws NamingException, SQLException
+	protected void populateDatabase(String jndiName, JDBCPopulator populator) throws NamingException, SQLException
 	{
 		Object datasource = new InitialContext().lookup(jndiName);
 		if (datasource instanceof XADataSource)
 		{
-			populateDatabase((XADataSource)datasource, sqlStream);
+			populateDatabase((XADataSource)datasource, populator);
 		}
 		else
 		{
-			populateDatabase((DataSource)datasource, sqlStream);
+			populateDatabase((DataSource)datasource, populator);
 		}
 	}
 
 
-	private void populateDatabase(DataSource datasource, InputStream sqlStream) throws SQLException
+	private void populateDatabase(DataSource datasource, JDBCPopulator populator) throws SQLException
 	{
 		Connection connection = null;
 		try
 		{
 			connection = datasource.getConnection();
-			populateDatabase(connection, sqlStream);
-		}
+            populator.populateDatabase(connection);
+            connection.commit();
+        }
 		finally
 		{
 			if (connection != null)
@@ -251,14 +248,15 @@ public class ContextListener implements ServletContextListener
 	}
 
 
-	private void populateDatabase(XADataSource datasource, InputStream sqlStream) throws SQLException
+	private void populateDatabase(XADataSource datasource, JDBCPopulator populator) throws SQLException
 	{
 		Connection connection = null;
 		try
 		{
 			connection = datasource.getXAConnection().getConnection();
-			populateDatabase(connection, sqlStream);
-		}
+            populator.populateDatabase(connection);
+            connection.commit();
+        }
 		finally
 		{
 			if (connection != null)
@@ -270,40 +268,7 @@ public class ContextListener implements ServletContextListener
 	}
 
 
-	private void populateDatabase(Connection connection, InputStream sqlStream) throws SQLException
-	{
-
-		Statement statement = null;
-		try
-		{
-			statement = connection.createStatement();
-
-			InputStreamReader sqlReader = new InputStreamReader(sqlStream, Charset.forName("UTF-8"));
-			SqlStatementIterator statementIterator = new SqlStatementIterator(new SkipCommentsReader(sqlReader, "--"));
-			for (String sqlStatement : new OnceIterable<String>(statementIterator))
-			{
-				LOGGER.info(String.format("Executing SQL: %s", sqlStatement));
-				statement.execute(sqlStatement);
-			}
-
-			connection.commit();
-		}
-		catch (SQLException e)
-		{
-			connection.rollback();
-			throw e;
-		}
-		finally
-		{
-			if (statement != null)
-			{
-				statement.close();
-			}
-		}
-	}
-
-
-	@Override
+    @Override
 	public void contextDestroyed(ServletContextEvent servletContextEvent)
 	{
 		// Nothing to do.
