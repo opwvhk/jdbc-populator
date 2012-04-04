@@ -3,12 +3,34 @@
 	---
 	Oscar Westra van Holthe - Kind
 	---
-	2012-02-03
+	2012-04-04
 	---
 
 JDBC Populator: Introduction
 
-  The JDBC populator is a JavaEE&\ 6 web fragment that detects the following condition:
+  The JDBC populator is a library with implementations of <<<javax.sql.DataSource>>> and <<<javax.sql.XADataSource>>>
+  that also doubles as a JavaEE&\ 6 web fragment (the latter is deprecated).
+
+* Data Sources
+
+  As an example says more than a long explanation, the following example is a <<<glassfish-resoutrces.xml>>> file
+  that defines both an XA and a non-XA data source, both of which use a <<<net.sf.opk.populator.JDBCPopulator>>> to
+  fill their respective databases.
+
+  TODO
+
+  The JDBCPopulator is called upon first use of each data source.
+
+  This enables the creation of an <Instant Developer Experience>, by adding the web fragment as a dependency when
+  running a web application in a JavaEE&\ 6 container. For example using the
+  {{{../embedded-glassfish-web-plugin/}Embedded GlassFish Web Plugin}}. Optionally, the web fragment can be
+  added as a test dependency: the plugin can use the test classpath when running GlassFish. This ensures that the web
+  fragment is not part of the <<<.war>>> file.
+
+
+* Web Fragment (deprecated)
+
+  The web fragment detects the following condition:
 
   * There is a resource named <<<import.sql>>> in the root of the classpath.
 
