@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package net.sf.opk.jdbc_populator;
+package net.sf.opk.populator;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -22,6 +22,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
 import javax.naming.Context;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -115,9 +116,15 @@ public class ContextListenerTest
 	@Test
 	public void testNoImport() throws Exception
 	{
-		replay(mockContext);
-		fireContextInitializedEvent();
-	}
+        DataSource nonJTADataSource = createMock(DataSource.class);
+        expect(nonJTADataSource.getConnection()).andStubReturn(connectionForTest);
+        expect(mockContext.lookup("jdbc/myDataSourceNonJta")).andStubReturn(nonJTADataSource);
+        replay(mockContext, nonJTADataSource);
+
+        fireContextInitializedEvent("persistence_nonjta");
+
+        checkRecordCount(0L);
+    }
 
 
 	private void fireContextInitializedEvent(String... extraClassResources)

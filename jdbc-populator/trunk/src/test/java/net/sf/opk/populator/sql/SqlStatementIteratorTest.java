@@ -1,4 +1,4 @@
-package net.sf.opk.jdbc_populator.util;
+package net.sf.opk.populator.sql;
 
 import java.io.IOException;
 import java.io.Reader;
