@@ -9,7 +9,7 @@
 JDBC Populator: Introduction
 
   The JDBC populator is a library with implementations of <<<javax.sql.DataSource>>> and <<<javax.sql.XADataSource>>>
-  that also doubles as a JavaEE&\ 6 web fragment (the latter is deprecated).
+  that also doubles as a {{{webfragment.html}JavaEE\ 6 web fragment}} (the latter is deprecated).
 
 * Data Sources
 
@@ -19,31 +19,17 @@ JDBC Populator: Introduction
 
   TODO
 
-  The JDBCPopulator is called upon first use of each data source.
+  The <<<JDBCPopulator>>> is called upon first use of each data source.
 
-  This enables the creation of an <Instant Developer Experience>, by adding the web fragment as a dependency when
-  running a web application in a JavaEE&\ 6 container. For example using the
-  {{{../embedded-glassfish-web-plugin/}Embedded GlassFish Web Plugin}}. Optionally, the web fragment can be
-  added as a test dependency: the plugin can use the test classpath when running GlassFish. This ensures that the web
-  fragment is not part of the <<<.war>>> file.
+  This enables the creation of an <Instant Developer Experience>, as a datasource for an in-memory database can be
+  populated upon first use. This means that if you start the application, for example by using the
+  {{{../embedded-glassfish-web-plugin/}Embedded GlassFish Web Plugin}}, your application will have data available.
 
+  Additionally, the <<<JDBCPopulator>>> can also populate our EJB component tests:
 
-* Web Fragment (deprecated)
+  TODO
 
-  The web fragment detects the following condition:
+* Conclusion
 
-  * There is a resource named <<<import.sql>>> in the root of the classpath.
-
-  * There is a single persistence unit.
-
-  []
-
-  If both conditions are met, the JDBC populator opens a database connection (prefering a JTA datasource over a non-JTA
-  datasource) and executers all SQL statements in the resource <<<import.sql>>>.
-
-  This enables the creation of an <Instant Developer Experience>, by adding the web fragment as a dependency when
-  running a web application in a JavaEE&\ 6 container. For example using the
-  {{{../embedded-glassfish-web-plugin/}Embedded GlassFish Web Plugin}}. Optionally, the web fragment can be
-  added as a test dependency: the plugin can use the test classpath when running GlassFish. This ensures that the web
-  fragment is not part of the <<<.war>>> file.
-
+  The <<<JDBCPopulator>>> is a valuable asset during development, both for trying out an application and to test
+  components contacting a database.
