@@ -13,6 +13,7 @@
 package net.sf.opk.populator;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -26,7 +27,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletContextEvent;
@@ -41,21 +41,23 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import net.sf.opk.populator.sql.ImportSqlPopulator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import net.sf.opk.populator.sql.SqlPopulator;
 
 import static javax.xml.xpath.XPathConstants.NODESET;
 import static javax.xml.xpath.XPathConstants.STRING;
 
 
 /**
- * A JDBC populator. For databases with only empty tables, it imports data by executing statements from a file
- * named <code>import.sql</code>.
+ * A JDBC populator. For databases with only empty tables, it imports data by executing statements from a file named
+ * <code>import.sql</code>.
  *
- * @author <a href="mailto:oscar.westra@42.nl">Oscar Westra van Holthe - Kind</a>
+ * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
+ * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
 @WebListener
 public class ContextListener implements ServletContextListener
@@ -101,18 +103,18 @@ public class ContextListener implements ServletContextListener
 	{
 		try
 		{
-            String datasource = findDataSource();
-            if (datasource == null)
-            {
-                LOGGER.info("No unambiguous datasource found; not populating the database.");
-            }
-            else
-            {
-                LOGGER.info(String.format("Found datasource %s to populate the database", datasource));
-                JDBCPopulator populator = getJDBCPopulator();
-                populateDatabase(datasource, populator);
-            }
-        }
+			String datasource = findDataSource();
+			if (datasource == null)
+			{
+				LOGGER.info("No unambiguous datasource found; not populating the database.");
+			}
+			else
+			{
+				LOGGER.info(String.format("Found datasource %s to populate the database", datasource));
+				JDBCPopulator populator = getJDBCPopulator();
+				populateDatabase(datasource, populator);
+			}
+		}
 		catch (Exception e)
 		{
 			LOGGER.log(Level.WARNING, "Something went wrong.", e);
@@ -120,13 +122,23 @@ public class ContextListener implements ServletContextListener
 	}
 
 
-    private JDBCPopulator getJDBCPopulator() {
+	private JDBCPopulator getJDBCPopulator()
+	{
 
-        return new ImportSqlPopulator();
-    }
+		return new SqlPopulator() {
+			@Override
+			public void populateDatabase(Connection connection) throws SQLException
+			{
+				ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+				InputStream sqlStream = classLoader.getResourceAsStream("import.sql");
+
+				populateFromStream(sqlStream, connection);
+			}
+		};
+	}
 
 
-    private String findDataSource()
+	private String findDataSource()
 			throws IOException, URISyntaxException, SAXException, ParserConfigurationException, XPathExpressionException
 	{
 		Map<String, String> jtaDataSourcesByPersistenceUnits = new HashMap<String, String>();
@@ -214,7 +226,8 @@ public class ContextListener implements ServletContextListener
 	}
 
 
-	protected void populateDatabase(String jndiName, JDBCPopulator populator) throws NamingException, SQLException
+	protected void populateDatabase(String jndiName, JDBCPopulator populator)
+			throws NamingException, SQLException, IOException
 	{
 		Object datasource = new InitialContext().lookup(jndiName);
 		if (datasource instanceof XADataSource)
@@ -228,15 +241,15 @@ public class ContextListener implements ServletContextListener
 	}
 
 
-	private void populateDatabase(DataSource datasource, JDBCPopulator populator) throws SQLException
+	private void populateDatabase(DataSource datasource, JDBCPopulator populator) throws SQLException, IOException
 	{
 		Connection connection = null;
 		try
 		{
 			connection = datasource.getConnection();
-            populator.populateDatabase(connection);
-            connection.commit();
-        }
+			populator.populateDatabase(connection);
+			connection.commit();
+		}
 		finally
 		{
 			if (connection != null)
@@ -248,15 +261,15 @@ public class ContextListener implements ServletContextListener
 	}
 
 
-	private void populateDatabase(XADataSource datasource, JDBCPopulator populator) throws SQLException
+	private void populateDatabase(XADataSource datasource, JDBCPopulator populator) throws SQLException, IOException
 	{
 		Connection connection = null;
 		try
 		{
 			connection = datasource.getXAConnection().getConnection();
-            populator.populateDatabase(connection);
-            connection.commit();
-        }
+			populator.populateDatabase(connection);
+			connection.commit();
+		}
 		finally
 		{
 			if (connection != null)
@@ -268,7 +281,7 @@ public class ContextListener implements ServletContextListener
 	}
 
 
-    @Override
+	@Override
 	public void contextDestroyed(ServletContextEvent servletContextEvent)
 	{
 		// Nothing to do.

@@ -12,102 +12,116 @@
  */
 package net.sf.opk.populator;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.XAConnection;
 
+
 /**
- * <p>A populating data source. Delegates all calls to the named data source, after populating the database via its named {@link JDBCPopulator}.</p>
+ * <p>A populating data source. Delegates all calls to the named data source, after populating the database via its
+ * named {@link JDBCPopulator}.</p>
  *
  * <p>Configuration properties:</p><dl>
  *
- * <dt>delegate</dt><dd>Required. The JNDI name of the data source to delegate all calls to. Must be a {@link javax.sql.XADataSource}.</dd>
+ * <dt>delegate</dt><dd>Required. The JNDI name of the data source to delegate all calls to. Must be a {@link
+ * javax.sql.XADataSource}.</dd>
  *
  * <dt>populator</dt><dd>Required. The JNDI name of the {@code JDBCPopulator} to use to populate the database.</dd>
  *
  * </dl>
  *
- * @author <a href="mailto:oscar.westra@42.nl">Oscar Westra van Holthe - Kind</a>
+ * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
-public class PopulatingXADataSource extends DelegateXADataSource {
+public class PopulatingXADataSource extends DelegateXADataSource
+{
 
-    /**
-     * The populator to use to populate the database.
-     */
-    private JDBCPopulator populator;
-    /**
-     * A flag that determines if the database has been populated.
-     */
-    private boolean populated;
-
-
-    @Override
-    public XAConnection getXAConnection() throws SQLException {
-
-        XAConnection xaConnection = super.getXAConnection();
-        populateOnce(xaConnection);
-        return xaConnection;
-    }
+	/**
+	 * The populator to use to populate the database.
+	 */
+	private JDBCPopulator populator;
+	/**
+	 * A flag that determines if the database has been populated.
+	 */
+	private boolean populated;
 
 
-    @Override
-    public XAConnection getXAConnection(String user, String password) throws SQLException {
+	@Override
+	public XAConnection getXAConnection() throws SQLException
+	{
 
-        XAConnection xaConnection = super.getXAConnection(user, password);
-        populateOnce(xaConnection);
-        return xaConnection;
-    }
-
-
-    private void populateOnce(XAConnection xaConnection) throws SQLException {
-
-        if (populated)
-        {
-            return;
-        }
-        populateInTransaction(xaConnection.getConnection());
-        populated = true;
-    }
+		XAConnection xaConnection = super.getXAConnection();
+		populateOnce(xaConnection);
+		return xaConnection;
+	}
 
 
-    private void populateInTransaction(Connection connection) throws SQLException {
+	@Override
+	public XAConnection getXAConnection(String user, String password) throws SQLException
+	{
 
-        boolean autocommit = connection.getAutoCommit();
-        try
-        {
-            if (autocommit)
-            {
-                connection.setAutoCommit(false);
-            }
-            populator.populateDatabase(connection);
-            connection.commit();
-        }
-        catch (SQLException e)
-        {
-            connection.rollback();
-            throw e;
-        }
-        finally
-        {
-            if (autocommit)
-            {
-                connection.setAutoCommit(true);
-            }
-        }
-    }
+		XAConnection xaConnection = super.getXAConnection(user, password);
+		populateOnce(xaConnection);
+		return xaConnection;
+	}
 
 
-    /**
-     * Set the {@link JDBCPopulator} of this data source to a populator loaded from JNDI.
-     *
-     * @param populator the name of the {@code JDBCPopulator} to delegate to
-     * @throws NamingException when the data source cannot be found
-     */
-    public void setPopulator(String populator) throws NamingException {
+	private void populateOnce(XAConnection xaConnection) throws SQLException
+	{
 
-        this.populator = (JDBCPopulator) new InitialContext().lookup(populator);
-    }
+		if (populated)
+		{
+			return;
+		}
+		populateInTransaction(xaConnection.getConnection());
+		populated = true;
+	}
+
+
+	private void populateInTransaction(Connection connection) throws SQLException
+	{
+
+		boolean autocommit = connection.getAutoCommit();
+		try
+		{
+			if (autocommit)
+			{
+				connection.setAutoCommit(false);
+			}
+			populator.populateDatabase(connection);
+			connection.commit();
+		}
+		catch (IOException e)
+		{
+			connection.rollback();
+			throw new SQLException(e);
+		}
+		catch (SQLException e)
+		{
+			connection.rollback();
+			throw e;
+		}
+		finally
+		{
+			if (autocommit)
+			{
+				connection.setAutoCommit(true);
+			}
+		}
+	}
+
+
+	/**
+	 * Set the {@link JDBCPopulator} of this data source to a populator loaded from JNDI.
+	 *
+	 * @param populator the name of the {@code JDBCPopulator} to delegate to
+	 * @throws NamingException when the data source cannot be found
+	 */
+	public void setPopulator(String populator) throws NamingException
+	{
+
+		this.populator = (JDBCPopulator)new InitialContext().lookup(populator);
+	}
 }

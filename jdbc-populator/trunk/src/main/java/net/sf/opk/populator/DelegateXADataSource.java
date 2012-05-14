@@ -16,97 +16,108 @@ import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Logger;
-
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 
+
 /**
- * A data source that delegates all method calls to a data source obtained via JNDI. It can delegate to both XA and non-XA data sources. Calling methods
- * exclusive to the type not currently being delegated to will yield an {@link IllegalStateException}.
+ * A data source that delegates all method calls to a data source obtained via JNDI. It can delegate to both XA and
+ * non-XA data sources. Calling methods exclusive to the type not currently being delegated to will yield an {@link
+ * IllegalStateException}.
  *
- * @author <a href="mailto:oscar.westra@42.nl">Oscar Westra van Holthe - Kind</a>
+ * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
-public class DelegateXADataSource implements XADataSource {
+public class DelegateXADataSource implements XADataSource
+{
 
-    /**
-     * The data source to delegate to.
-     */
-    private XADataSource xaDelegate;
-
-
-    /**
-     * Set the delegate of this data source to a data source loaded from JNDI.
-     *
-     * @param jndiName the name of the data source to delegate to
-     * @throws NamingException when the data source cannot be found
-     */
-    public void setDelegate(String jndiName) throws NamingException {
-
-        Object datasource = new InitialContext().lookup(jndiName);
-        if (datasource instanceof XADataSource)
-        {
-            setDelegate((XADataSource)datasource);
-        }
-        else
-        {
-            throw new NamingException(jndiName + " is not a " + XADataSource.class.getName());
-        }
-    }
+	/**
+	 * The data source to delegate to.
+	 */
+	private XADataSource xaDelegate;
 
 
-    public void setDelegate(XADataSource delegate) {
+	/**
+	 * Set the delegate of this data source to a data source loaded from JNDI.
+	 *
+	 * @param jndiName the name of the data source to delegate to
+	 * @throws NamingException when the data source cannot be found
+	 */
+	public void setDelegate(String jndiName) throws NamingException
+	{
 
-        xaDelegate = delegate;
-    }
-
-
-    @Override
-    public XAConnection getXAConnection() throws SQLException {
-
-        return xaDelegate.getXAConnection();
-    }
-
-
-    @Override
-    public XAConnection getXAConnection(String user, String password) throws SQLException {
-
-        return xaDelegate.getXAConnection(user, password);
-    }
-
-
-    @Override
-    public PrintWriter getLogWriter() throws SQLException {
-
-        return xaDelegate.getLogWriter();
-    }
+		Object datasource = new InitialContext().lookup(jndiName);
+		if (datasource instanceof XADataSource)
+		{
+			setDelegate((XADataSource)datasource);
+		}
+		else
+		{
+			throw new NamingException(jndiName + " is not a " + XADataSource.class.getName());
+		}
+	}
 
 
-    @Override
-    public void setLogWriter(PrintWriter out) throws SQLException {
+	public void setDelegate(XADataSource delegate)
+	{
 
-        xaDelegate.setLogWriter(out);
-    }
-
-
-    @Override
-    public void setLoginTimeout(int seconds) throws SQLException {
-
-        xaDelegate.setLoginTimeout(seconds);
-    }
+		xaDelegate = delegate;
+	}
 
 
-    @Override
-    public int getLoginTimeout() throws SQLException {
+	@Override
+	public XAConnection getXAConnection() throws SQLException
+	{
 
-        return xaDelegate.getLoginTimeout();
-    }
+		return xaDelegate.getXAConnection();
+	}
 
 
-    @Override
-    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+	@Override
+	public XAConnection getXAConnection(String user, String password) throws SQLException
+	{
 
-        return xaDelegate.getParentLogger();
-    }
+		return xaDelegate.getXAConnection(user, password);
+	}
+
+
+	@Override
+	public PrintWriter getLogWriter() throws SQLException
+	{
+
+		return xaDelegate.getLogWriter();
+	}
+
+
+	@Override
+	public void setLogWriter(PrintWriter out) throws SQLException
+	{
+
+		xaDelegate.setLogWriter(out);
+	}
+
+
+	@Override
+	public void setLoginTimeout(int seconds) throws SQLException
+	{
+
+		xaDelegate.setLoginTimeout(seconds);
+	}
+
+
+	@Override
+	public int getLoginTimeout() throws SQLException
+	{
+
+		return xaDelegate.getLoginTimeout();
+	}
+
+
+	@Override
+	public Logger getParentLogger() throws SQLFeatureNotSupportedException
+	{
+
+		return xaDelegate.getParentLogger();
+	}
 }

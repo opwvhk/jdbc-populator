@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
  * An iterator that reads all SQL statements from an SQL file. Newlines are replaces by spaces, and whitespace around
  * statements are trimmed.
  *
- * @author <a href="mailto:oscar.westra@42.nl">Oscar Westra van Holthe - Kind</a>
+ * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
 public class SqlStatementIterator implements Iterator<String>
 {

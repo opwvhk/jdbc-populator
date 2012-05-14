@@ -21,7 +21,7 @@ import java.io.Reader;
  * A reader that skips any single-comments in the input, converting line ends into newlines. The comment delimiter is
  * configurable.
  *
- * @author <a href="mailto:oscar.westra@42.nl">Oscar Westra van Holthe - Kind</a>
+ * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
 public class SkipCommentsReader extends Reader
 {
@@ -79,8 +79,8 @@ public class SkipCommentsReader extends Reader
 
 
 	/**
-	 * Fill the buffer. If the end of the input from the underlying reader is reached, the buffer will be null.
-	 * Otherwise, the buffer will contain at least one character.
+	 * Fill the buffer. If the end of the input from the underlying reader is reached, the buffer will be null. Otherwise,
+	 * the buffer will contain at least one character.
 	 *
 	 * @return {@literal true} as long as the end of the input has not been reached; {@literal false} otherwise
 	 * @throws IOException when reading from the underlying reader fails
