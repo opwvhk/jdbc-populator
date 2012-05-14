@@ -12,32 +12,36 @@
  */
 package net.sf.opk.populator;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+
 
 /**
  * <p>Interface for JDBC populators. These actually fill the database.</p>
  *
  * <p>When the populator is called depends on the caller:</p><ul>
  *
- * <li>{@link ContextListener} only uses {@link net.sf.opk.populator.sql.ImportSqlPopulator}, and calls it right after the application is
- * initialized. This means that the persistence unit of the application has been set up (there must be exactly one),
- * and thus that the database structure is already in place.</li>
+ * <li>{@link ContextListener} uses a {@link JDBCPopulator}, and calls it right after the application is initialized.
+ * This means that the persistence unit of the application has been set up (there must be exactly one), and thus that
+ * the database structure is already in place.</li>
  *
  * <li>{@link PopulatingXADataSource} calls its JDBC populator just before the first connection is returned. This
  * happens before any persistence unit is called. If the database is an in-memory database, it'll be empty.</li>
  *
  * </ul>
  *
- * @author <a href="mailto:oscar.westra@42.nl">Oscar Westra van Holthe - Kind</a>
+ * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
-public interface JDBCPopulator {
+public interface JDBCPopulator
+{
 
-    /**
-     * Populate the database.
-     *
-     * @param connection the connection to populate the database with
-     * @throws SQLException when the database cannot be populated
-     */
-    void populateDatabase(Connection connection) throws SQLException;
+	/**
+	 * Populate the database.
+	 *
+	 * @param connection the connection to populate the database with
+	 * @throws SQLException when the database cannot be populated
+	 * @throws IOException when the data to populate with cannot be read
+	 */
+	void populateDatabase(Connection connection) throws SQLException, IOException;
 }

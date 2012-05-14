@@ -18,7 +18,7 @@ import java.util.Iterator;
 /**
  * An {@code Iterable} that can be iterated once.
  *
- * @author <a href="mailto:oscar.westra@42.nl">Oscar Westra van Holthe - Kind</a>
+ * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
 public class OnceIterable<T> implements Iterable<T>
 {

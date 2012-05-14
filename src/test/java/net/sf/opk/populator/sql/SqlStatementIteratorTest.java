@@ -1,5 +1,6 @@
 package net.sf.opk.populator.sql;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -28,20 +29,19 @@ public class SqlStatementIteratorTest
 	private static final String TRAILING = "foo";
 	private static final String SQL_STREAM1 =
 			STATEMENT1a + "\n" + STATEMENT1b + ";\n" + STATEMENT2 + ";\n\n" + TRAILING;
-	private static final String SQL_STREAM2 =
-			STATEMENT1a + "\n" + STATEMENT1b + ";\n" + STATEMENT2 + ";\n\n";
+	private static final String SQL_STREAM2 = STATEMENT1a + "\n" + STATEMENT1b + ";\n" + STATEMENT2 + ";\n\n";
 	private SqlStatementIterator iterator;
 
 
 	@Test(expected = UnsupportedOperationException.class)
 	public void testRemove() throws Exception
 	{
-		iterator = new SqlStatementIterator(new StringReader(SQL_STREAM1));
+		iterator = new SqlStatementIterator(new BufferedReader(new StringReader(SQL_STREAM1)));
 		iterator.remove();
 	}
 
 
-	@Test()
+	@Test
 	public void testWithIOErrors1() throws Exception
 	{
 		Reader faultyReader = createMock(Reader.class);
@@ -58,7 +58,7 @@ public class SqlStatementIteratorTest
 	}
 
 
-	@Test()
+	@Test
 	public void testWithIOErrors2() throws Exception
 	{
 		Reader faultyReader = createMock(Reader.class);

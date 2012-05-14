@@ -13,17 +13,15 @@
 package net.sf.opk.populator;
 
 import java.util.Hashtable;
-
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 
 
 /**
- * <p>Simple {@code InitialContextFactory} that returns only the JNDI context it has been given. Not thread-safe,
- * not even remotely useful as a (real) JNDI provider, but very useful to get a mocked {@link Context} into the
- * code you're testing.</p>
- * <p>Example usage:</p>
+ * <p>Simple {@code InitialContextFactory} that returns only the JNDI context it has been given. Not thread-safe, not
+ * even remotely useful as a (real) JNDI provider, but very useful to get a mocked {@link Context} into the code you're
+ * testing.</p> <p>Example usage:</p>
  * <pre>
  * System.setProperty(Context.INITIAL_CONTEXT_FACTORY, DummyInitialContextFactory.class.getName());
  * Context mockContext = createMock(Context.class);
@@ -33,7 +31,7 @@ import javax.naming.spi.InitialContextFactory;
  * DummyInitialContextFactory.setMockContext(mockContext);
  * </pre>
  *
- * @author <a href="mailto:oscar.westra@42.nl">Oscar Westra van Holthe - Kind</a>
+ * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
 public class DummyInitialContextFactory implements InitialContextFactory
 {

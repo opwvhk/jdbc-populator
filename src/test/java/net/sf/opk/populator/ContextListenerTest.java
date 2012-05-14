@@ -18,11 +18,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-
 import javax.naming.Context;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -39,16 +35,13 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 
-public class ContextListenerTest
+public class ContextListenerTest extends DatabaseTestBase
 {
 	private ContextListener listener;
 	private Context mockContext;
-	private Connection connectionForTest;
-	private Connection connectionToVerify;
 
 
 	@Before
@@ -59,33 +52,12 @@ public class ContextListenerTest
 		System.setProperty(Context.INITIAL_CONTEXT_FACTORY, DummyInitialContextFactory.class.getName());
 		mockContext = createMock(Context.class);
 		DummyInitialContextFactory.setMockContext(mockContext);
-
-		connectionForTest = openDbConnection();
-		connectionToVerify = openDbConnection();
-
-		Statement statement = connectionToVerify.createStatement();
-		statement.execute("create table Record (id integer primary key, name varchar(32) not null)");
-		statement.close();
-
-		connectionToVerify.commit();
-	}
-
-
-	private Connection openDbConnection() throws SQLException
-	{
-		return DriverManager.getConnection("jdbc:hsqldb:mem:testDb", "sa", "");
 	}
 
 
 	@After
 	public void tearDown() throws Exception
 	{
-		Statement statement = connectionToVerify.createStatement();
-		statement.execute("drop table Record");
-		statement.close();
-
-		connectionToVerify.close();
-		connectionForTest.close();
 		System.clearProperty(Context.INITIAL_CONTEXT_FACTORY);
 	}
 
@@ -116,15 +88,15 @@ public class ContextListenerTest
 	@Test
 	public void testNoImport() throws Exception
 	{
-        DataSource nonJTADataSource = createMock(DataSource.class);
-        expect(nonJTADataSource.getConnection()).andStubReturn(connectionForTest);
-        expect(mockContext.lookup("jdbc/myDataSourceNonJta")).andStubReturn(nonJTADataSource);
-        replay(mockContext, nonJTADataSource);
+		DataSource nonJTADataSource = createMock(DataSource.class);
+		expect(nonJTADataSource.getConnection()).andStubReturn(connectionForTest);
+		expect(mockContext.lookup("jdbc/myDataSourceNonJta")).andStubReturn(nonJTADataSource);
+		replay(mockContext, nonJTADataSource);
 
-        fireContextInitializedEvent("persistence_nonjta");
+		fireContextInitializedEvent("persistence_nonjta");
 
-        checkRecordCount(0L);
-    }
+		checkRecordCount(0L);
+	}
 
 
 	private void fireContextInitializedEvent(String... extraClassResources)
@@ -144,11 +116,7 @@ public class ContextListenerTest
 
 	private File findClasspathsDirectory() throws URISyntaxException
 	{
-		File markerFile = new File(getClass().getResource("/resourceToLocateSiblingDirectoryWith.txt").toURI());
-		File resourcesDirectory = markerFile.getParentFile();
-		File targetDirectory = resourcesDirectory.getParentFile();
-		File baseDirectory = targetDirectory.getParentFile();
-		File srcDirectory = new File(baseDirectory, "src");
+		File srcDirectory = MavenUtil.findSourcesDirectory();
 		File testDirectory = new File(srcDirectory, "test");
 		File classpathsDirectory = new File(testDirectory, "classpaths");
 		return classpathsDirectory.getAbsoluteFile();
@@ -191,23 +159,6 @@ public class ContextListenerTest
 		fireContextInitializedEvent("importOk");
 
 		checkRecordCount(0L);
-	}
-
-
-	private void checkRecordCount(long recordCount) throws SQLException
-	{
-		Statement statement = connectionToVerify.createStatement();
-		ResultSet resultSet = statement.executeQuery("select count(*) from Record");
-		resultSet.next();
-		try
-		{
-			assertEquals(recordCount, resultSet.getLong(1));
-		}
-		finally
-		{
-			resultSet.close();
-			statement.close();
-		}
 	}
 
 
