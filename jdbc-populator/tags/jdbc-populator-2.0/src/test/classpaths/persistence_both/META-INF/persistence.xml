@@ -1,0 +1,6 @@
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="1.0">
+	<persistence-unit name="puBoth" transaction-type="JTA">
+		<jta-data-source>jdbc/myDataSource</jta-data-source>
+		<non-jta-data-source>jdbc/myDataSourceNonJta</non-jta-data-source>
+	</persistence-unit>
+</persistence>
