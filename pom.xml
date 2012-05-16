@@ -8,7 +8,7 @@
 	<groupId>net.sf.opk</groupId>
 	<artifactId>jdbc-populator</artifactId>
 	<packaging>jar</packaging>
-	<version>2.0</version>
+	<version>2.1-SNAPSHOT</version>
 	<name>JDBC Populator</name>
 	<description><![CDATA[
 		Web Fragment that provides the same functionality as Hibernate, when it detects that there is a resource named
@@ -16,9 +16,9 @@
 	]]></description>
 	<inceptionYear>2012</inceptionYear>
 	<scm>
-		<connection>scm:svn:svn://svn.code.sf.net/p/opk/code/jdbc-populator/tags/jdbc-populator-2.0</connection>
-		<developerConnection>scm:svn:https://svn.code.sf.net/p/opk/code/jdbc-populator/tags/jdbc-populator-2.0</developerConnection>
-		<url>http://svn.code.sf.net/p/opk/code/jdbc-populator/tags/jdbc-populator-2.0</url>
+		<connection>scm:svn:svn://svn.code.sf.net/p/opk/code/jdbc-populator/trunk/</connection>
+		<developerConnection>scm:svn:https://svn.code.sf.net/p/opk/code/jdbc-populator/trunk/</developerConnection>
+		<url>http://svn.code.sf.net/p/opk/code/jdbc-populator/trunk/</url>
 	</scm>
 	<properties>
 		<jdk.version>1.6</jdk.version>
