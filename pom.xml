@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>net.sf.opk</groupId>
@@ -9,7 +8,7 @@
 	<groupId>net.sf.opk</groupId>
 	<artifactId>jdbc-populator</artifactId>
 	<packaging>jar</packaging>
-	<version>2.0-SNAPSHOT</version>
+	<version>2.0</version>
 	<name>JDBC Populator</name>
 	<description><![CDATA[
 		Web Fragment that provides the same functionality as Hibernate, when it detects that there is a resource named
@@ -17,9 +16,9 @@
 	]]></description>
 	<inceptionYear>2012</inceptionYear>
 	<scm>
-		<connection>scm:svn:svn://svn.code.sf.net/p/opk/code/jdbc-populator/trunk/</connection>
-		<developerConnection>scm:svn:https://svn.code.sf.net/p/opk/code/jdbc-populator/trunk/</developerConnection>
-		<url>http://svn.code.sf.net/p/opk/code/jdbc-populator/trunk/</url>
+		<connection>scm:svn:svn://svn.code.sf.net/p/opk/code/jdbc-populator/tags/jdbc-populator-2.0</connection>
+		<developerConnection>scm:svn:https://svn.code.sf.net/p/opk/code/jdbc-populator/tags/jdbc-populator-2.0</developerConnection>
+		<url>http://svn.code.sf.net/p/opk/code/jdbc-populator/tags/jdbc-populator-2.0</url>
 	</scm>
 	<properties>
 		<jdk.version>1.6</jdk.version>
