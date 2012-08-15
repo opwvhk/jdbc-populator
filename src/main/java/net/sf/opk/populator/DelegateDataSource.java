@@ -31,9 +31,12 @@ import javax.sql.DataSource;
  */
 public class DelegateDataSource implements DataSource
 {
-
 	/**
-	 * The data source to delegate to, if it is a simple data source.
+	 * The JNDI name of the data source to delegate to.
+	 */
+	private String delegateName;
+	/**
+	 * The data source to delegate to. May be {@literal null} if {@link #delegateName} is set.
 	 */
 	private DataSource delegate;
 
@@ -42,19 +45,53 @@ public class DelegateDataSource implements DataSource
 	 * Set the delegate of this data source to a data source loaded from JNDI.
 	 *
 	 * @param jndiName the name of the data source to delegate to
+	 */
+	public void setDelegate(String jndiName)
+	{
+		delegateName = jndiName;
+	}
+
+
+	/**
+	 * Get the value of {@lilnk #delegate}, loading the JNDI entry named {@link #delegateName} if necessary.
+	 *
+	 * @return the data source
+	 * @throws IllegalStateException when the data source cannot be found
+	 */
+	private DataSource getDelegate()
+	{
+		if (delegate == null)
+		{
+			try
+			{
+				delegate = loadDataSource();
+			}
+			catch (NamingException e)
+			{
+				throw new IllegalStateException("Failed to load the data source.", e);
+			}
+		}
+		return delegate;
+	}
+
+
+	/**
+	 * Load the data source from JNDI.
+	 *
+	 * @return the data source
 	 * @throws NamingException when the data source cannot be found
 	 */
-	public void setDelegate(String jndiName) throws NamingException
+	private DataSource loadDataSource() throws NamingException
 	{
 
-		Object datasource = new InitialContext().lookup(jndiName);
+		Object datasource = new InitialContext().lookup(delegateName);
 		if (datasource instanceof DataSource)
 		{
-			setDelegate((DataSource)datasource);
+			return (DataSource)datasource;
 		}
 		else
 		{
-			throw new NamingException(jndiName + " is not a " + DataSource.class.getName());
+			throw new NamingException(delegateName + " is not a " + DataSource.class.getName());
 		}
 	}
 
@@ -70,7 +107,7 @@ public class DelegateDataSource implements DataSource
 	public Connection getConnection() throws SQLException
 	{
 
-		return delegate.getConnection();
+		return getDelegate().getConnection();
 	}
 
 
@@ -78,7 +115,7 @@ public class DelegateDataSource implements DataSource
 	public Connection getConnection(String username, String password) throws SQLException
 	{
 
-		return delegate.getConnection(username, password);
+		return getDelegate().getConnection(username, password);
 	}
 
 
@@ -86,7 +123,7 @@ public class DelegateDataSource implements DataSource
 	public PrintWriter getLogWriter() throws SQLException
 	{
 
-		return delegate.getLogWriter();
+		return getDelegate().getLogWriter();
 	}
 
 
@@ -94,7 +131,7 @@ public class DelegateDataSource implements DataSource
 	public void setLogWriter(PrintWriter out) throws SQLException
 	{
 
-		delegate.setLogWriter(out);
+		getDelegate().setLogWriter(out);
 	}
 
 
@@ -102,7 +139,7 @@ public class DelegateDataSource implements DataSource
 	public void setLoginTimeout(int seconds) throws SQLException
 	{
 
-		delegate.setLoginTimeout(seconds);
+		getDelegate().setLoginTimeout(seconds);
 	}
 
 
@@ -110,7 +147,7 @@ public class DelegateDataSource implements DataSource
 	public int getLoginTimeout() throws SQLException
 	{
 
-		return delegate.getLoginTimeout();
+		return getDelegate().getLoginTimeout();
 	}
 
 
@@ -118,7 +155,7 @@ public class DelegateDataSource implements DataSource
 	public Logger getParentLogger() throws SQLFeatureNotSupportedException
 	{
 
-		return delegate.getParentLogger();
+		return getDelegate().getParentLogger();
 	}
 
 
@@ -126,7 +163,7 @@ public class DelegateDataSource implements DataSource
 	public <T> T unwrap(Class<T> iface) throws SQLException
 	{
 
-		return delegate.unwrap(iface);
+		return getDelegate().unwrap(iface);
 	}
 
 
@@ -134,6 +171,6 @@ public class DelegateDataSource implements DataSource
 	public boolean isWrapperFor(Class<?> iface) throws SQLException
 	{
 
-		return delegate.isWrapperFor(iface);
+		return getDelegate().isWrapperFor(iface);
 	}
 }

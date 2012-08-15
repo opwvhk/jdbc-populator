@@ -22,6 +22,7 @@ import javax.naming.NamingException;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,49 +38,47 @@ import static org.junit.Assert.assertSame;
 
 public class PopulatingXADataSourceTest
 {
+	private Context mockContext;
 	private PopulatingXADataSource datasource;
 	private JDBCPopulator populator;
 	private XADataSource delegate;
+	private static final String POPULATOR_JNDI_NAME = "POPULATOR_JNDI_NAME";
+	private static final String DELEGATE_JNDI_NAME = "DELEGATE_JNDI_NAME";
 
 
 	@Before
 	public void setUp() throws NamingException
 	{
-		datasource = new PopulatingXADataSource();
-
 		System.setProperty(Context.INITIAL_CONTEXT_FACTORY, DummyInitialContextFactory.class.getName());
-		Context mockContext = createMock(Context.class);
+		mockContext = createMock(Context.class);
 		DummyInitialContextFactory.setMockContext(mockContext);
 
-		final String populatorJNDIName = "populatorJNDIName";
+		datasource = new PopulatingXADataSource();
+		datasource.setDelegate(DELEGATE_JNDI_NAME);
+
 		populator = createMock(JDBCPopulator.class);
-		expect(mockContext.lookup(populatorJNDIName)).andReturn(populator);
 
-		final String delegateJNDIName = "delegateJNDIName";
 		delegate = createMock(XADataSource.class);
-		expect(mockContext.lookup(delegateJNDIName)).andReturn(delegate);
 
-		replay(mockContext);
-		datasource.setPopulator(populatorJNDIName);
-		datasource.setDelegate(delegateJNDIName);
-		verify(mockContext);
-		reset(mockContext);
+		reset(mockContext, populator, delegate);
 	}
 
 
-	@Test(expected = NamingException.class)
-	public void testSetUpFailure1() throws NamingException
+	@After
+	public void restoreJNDI() throws Exception
 	{
-		Context mockContext = createMock(Context.class);
+		System.clearProperty(Context.INITIAL_CONTEXT_FACTORY);
+	}
+
+
+	@Test(expected = IllegalStateException.class)
+	public void testSetUpFailure1() throws NamingException, SQLException
+	{
 		try
 		{
-			DummyInitialContextFactory.setMockContext(mockContext);
-
-			final String delegateJNDIName = "delegateJNDIName";
-			expect(mockContext.lookup(delegateJNDIName)).andReturn(new Object());
-
+			expect(mockContext.lookup(DELEGATE_JNDI_NAME)).andReturn(new Object());
 			replay(mockContext);
-			datasource.setDelegate(delegateJNDIName);
+			datasource.getLoginTimeout();
 		}
 		finally
 		{
@@ -91,16 +90,12 @@ public class PopulatingXADataSourceTest
 	@Test(expected = ClassCastException.class)
 	public void testSetUpFailure2() throws NamingException
 	{
-		Context mockContext = createMock(Context.class);
 		try
 		{
-			DummyInitialContextFactory.setMockContext(mockContext);
-
-			final String populatorJNDIName = "populatorJNDIName";
-			expect(mockContext.lookup(populatorJNDIName)).andReturn(new Object());
-
+			expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(new Object());
 			replay(mockContext);
-			datasource.setPopulator(populatorJNDIName);
+
+			datasource.setPopulator(POPULATOR_JNDI_NAME);
 		}
 		finally
 		{
@@ -112,6 +107,8 @@ public class PopulatingXADataSourceTest
 	@Test(expected = SQLException.class)
 	public void testGetConnection1a() throws SQLException
 	{
+		datasource.setDelegate(delegate);
+
 		XAConnection xaConnection = createMock(XAConnection.class);
 		Connection connection = createMock(Connection.class);
 		try
@@ -120,19 +117,22 @@ public class PopulatingXADataSourceTest
 			expect(xaConnection.getConnection()).andReturn(connection);
 			expect(connection.getAutoCommit()).andThrow(new SQLException());
 
-			replay(xaConnection, connection, populator, delegate);
+			replay(xaConnection, connection, mockContext, populator, delegate);
 			datasource.getXAConnection();
 		}
 		finally
 		{
-			verify(xaConnection, connection, populator, delegate);
+			verify(xaConnection, connection, mockContext, populator, delegate);
 		}
 	}
 
 
 	@Test(expected = SQLException.class)
-	public void testGetConnection2a() throws SQLException, IOException
+	public void testGetConnection2a() throws SQLException, IOException, NamingException
 	{
+		datasource.setDelegate(delegate);
+		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+
 		XAConnection xaConnection = createMock(XAConnection.class);
 		Connection connection = createMock(Connection.class);
 		try
@@ -147,19 +147,23 @@ public class PopulatingXADataSourceTest
 			populator.populateDatabase(connection);
 			expectLastCall().andThrow(new IOException());
 
-			replay(xaConnection, connection, populator, delegate);
+			replay(xaConnection, connection, mockContext, populator, delegate);
+			datasource.setPopulator(POPULATOR_JNDI_NAME);
 			datasource.getXAConnection();
 		}
 		finally
 		{
-			verify(xaConnection, connection, populator, delegate);
+			verify(xaConnection, connection, mockContext, populator, delegate);
 		}
 	}
 
 
 	@Test(expected = SQLException.class)
-	public void testGetConnection3a() throws SQLException, IOException
+	public void testGetConnection3a() throws SQLException, IOException, NamingException
 	{
+		datasource.setDelegate(delegate);
+		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+
 		XAConnection xaConnection = createMock(XAConnection.class);
 		Connection connection = createMock(Connection.class);
 		try
@@ -174,19 +178,23 @@ public class PopulatingXADataSourceTest
 			populator.populateDatabase(connection);
 			expectLastCall().andThrow(new SQLException());
 
-			replay(xaConnection, connection, populator, delegate);
+			replay(xaConnection, connection, mockContext, populator, delegate);
+			datasource.setPopulator(POPULATOR_JNDI_NAME);
 			datasource.getXAConnection();
 		}
 		finally
 		{
-			verify(xaConnection, connection, populator, delegate);
+			verify(xaConnection, connection, mockContext, populator, delegate);
 		}
 	}
 
 
 	@Test
-	public void testGetConnection4a() throws SQLException, IOException
+	public void testGetConnection4a() throws SQLException, IOException, NamingException
 	{
+		datasource.setDelegate(delegate);
+		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+
 		XAConnection xaConnection = createMock(XAConnection.class);
 		Connection connection = createMock(Connection.class);
 
@@ -200,15 +208,19 @@ public class PopulatingXADataSourceTest
 		populator.populateDatabase(connection);
 		expectLastCall();
 
-		replay(xaConnection, connection, populator, delegate);
+		replay(xaConnection, connection, mockContext, populator, delegate);
+		datasource.setPopulator(POPULATOR_JNDI_NAME);
 		assertSame(xaConnection, datasource.getXAConnection());
-		verify(xaConnection, connection, populator, delegate);
+		verify(xaConnection, connection, mockContext, populator, delegate);
 	}
 
 
 	@Test
-	public void testGetConnection5a() throws SQLException, IOException
+	public void testGetConnection5a() throws SQLException, IOException, NamingException
 	{
+		datasource.setDelegate(delegate);
+		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+
 		XAConnection xaConnection = createMock(XAConnection.class);
 		Connection connection = createMock(Connection.class);
 
@@ -222,16 +234,20 @@ public class PopulatingXADataSourceTest
 		populator.populateDatabase(connection);
 		expectLastCall();
 
-		replay(xaConnection, connection, populator, delegate);
+		replay(xaConnection, connection, mockContext, populator, delegate);
+		datasource.setPopulator(POPULATOR_JNDI_NAME);
 		assertSame(xaConnection, datasource.getXAConnection());
 		assertSame(xaConnection, datasource.getXAConnection());
-		verify(xaConnection, connection, populator, delegate);
+		verify(xaConnection, connection, mockContext, populator, delegate);
 	}
 
 
 	@Test
-	public void testGetConnection6a() throws SQLException, IOException
+	public void testGetConnection6a() throws SQLException, IOException, NamingException
 	{
+		datasource.setDelegate(delegate);
+		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+
 		XAConnection xaConnection = createMock(XAConnection.class);
 		Connection connection = createMock(Connection.class);
 
@@ -249,15 +265,18 @@ public class PopulatingXADataSourceTest
 		populator.populateDatabase(connection);
 		expectLastCall();
 
-		replay(xaConnection, connection, populator, delegate);
+		replay(xaConnection, connection, mockContext, populator, delegate);
+		datasource.setPopulator(POPULATOR_JNDI_NAME);
 		assertSame(xaConnection, datasource.getXAConnection());
-		verify(xaConnection, connection, populator, delegate);
+		verify(xaConnection, connection, mockContext, populator, delegate);
 	}
 
 
 	@Test(expected = SQLException.class)
-	public void testGetConnection1b() throws SQLException
+	public void testGetConnection1b() throws SQLException, NamingException
 	{
+		datasource.setDelegate(delegate);
+
 		final String user = "username";
 		final String pass = "password";
 
@@ -269,19 +288,22 @@ public class PopulatingXADataSourceTest
 			expect(xaConnection.getConnection()).andReturn(connection);
 			expect(connection.getAutoCommit()).andThrow(new SQLException());
 
-			replay(xaConnection, connection, populator, delegate);
+			replay(xaConnection, connection, mockContext, populator, delegate);
 			datasource.getXAConnection(user, pass);
 		}
 		finally
 		{
-			verify(xaConnection, connection, populator, delegate);
+			verify(xaConnection, connection, mockContext, populator, delegate);
 		}
 	}
 
 
 	@Test(expected = SQLException.class)
-	public void testGetConnection2b() throws SQLException, IOException
+	public void testGetConnection2b() throws SQLException, IOException, NamingException
 	{
+		datasource.setDelegate(delegate);
+		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+
 		final String user = "username";
 		final String pass = "password";
 
@@ -299,19 +321,23 @@ public class PopulatingXADataSourceTest
 			populator.populateDatabase(connection);
 			expectLastCall().andThrow(new IOException());
 
-			replay(xaConnection, connection, populator, delegate);
+			replay(xaConnection, connection, mockContext, populator, delegate);
+			datasource.setPopulator(POPULATOR_JNDI_NAME);
 			datasource.getXAConnection(user, pass);
 		}
 		finally
 		{
-			verify(xaConnection, connection, populator, delegate);
+			verify(xaConnection, connection, mockContext, populator, delegate);
 		}
 	}
 
 
 	@Test(expected = SQLException.class)
-	public void testGetConnection3b() throws SQLException, IOException
+	public void testGetConnection3b() throws SQLException, IOException, NamingException
 	{
+		datasource.setDelegate(delegate);
+		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+
 		final String user = "username";
 		final String pass = "password";
 
@@ -329,19 +355,23 @@ public class PopulatingXADataSourceTest
 			populator.populateDatabase(connection);
 			expectLastCall().andThrow(new SQLException());
 
-			replay(xaConnection, connection, populator, delegate);
+			replay(xaConnection, connection, mockContext, populator, delegate);
+			datasource.setPopulator(POPULATOR_JNDI_NAME);
 			datasource.getXAConnection(user, pass);
 		}
 		finally
 		{
-			verify(xaConnection, connection, populator, delegate);
+			verify(xaConnection, connection, mockContext, populator, delegate);
 		}
 	}
 
 
 	@Test
-	public void testGetConnection4b() throws SQLException, IOException
+	public void testGetConnection4b() throws SQLException, IOException, NamingException
 	{
+		datasource.setDelegate(delegate);
+		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+
 		final String user = "username";
 		final String pass = "password";
 
@@ -358,15 +388,19 @@ public class PopulatingXADataSourceTest
 		populator.populateDatabase(connection);
 		expectLastCall();
 
-		replay(xaConnection, connection, populator, delegate);
+		replay(xaConnection, connection, mockContext, populator, delegate);
+		datasource.setPopulator(POPULATOR_JNDI_NAME);
 		assertSame(xaConnection, datasource.getXAConnection(user, pass));
-		verify(xaConnection, connection, populator, delegate);
+		verify(xaConnection, connection, mockContext, populator, delegate);
 	}
 
 
 	@Test
-	public void testGetConnection5b() throws SQLException, IOException
+	public void testGetConnection5b() throws SQLException, IOException, NamingException
 	{
+		datasource.setDelegate(delegate);
+		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+
 		final String user = "username";
 		final String pass = "password";
 
@@ -383,16 +417,20 @@ public class PopulatingXADataSourceTest
 		populator.populateDatabase(connection);
 		expectLastCall();
 
-		replay(xaConnection, connection, populator, delegate);
+		replay(xaConnection, connection, mockContext, populator, delegate);
+		datasource.setPopulator(POPULATOR_JNDI_NAME);
 		assertSame(xaConnection, datasource.getXAConnection(user, pass));
 		assertSame(xaConnection, datasource.getXAConnection(user, pass));
-		verify(xaConnection, connection, populator, delegate);
+		verify(xaConnection, connection, mockContext, populator, delegate);
 	}
 
 
 	@Test
-	public void testGetConnection6b() throws SQLException, IOException
+	public void testGetConnection6b() throws SQLException, IOException, NamingException
 	{
+		datasource.setDelegate(delegate);
+		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+
 		final String user = "username";
 		final String pass = "password";
 
@@ -413,72 +451,83 @@ public class PopulatingXADataSourceTest
 		populator.populateDatabase(connection);
 		expectLastCall();
 
-		replay(xaConnection, connection, populator, delegate);
+		replay(xaConnection, connection, mockContext, populator, delegate);
+		datasource.setPopulator(POPULATOR_JNDI_NAME);
 		assertSame(xaConnection, datasource.getXAConnection(user, pass));
-		verify(xaConnection, connection, populator, delegate);
+		verify(xaConnection, connection, mockContext, populator, delegate);
 	}
 
 
 	@Test
 	public void testGetLoginTimeout() throws SQLException
 	{
+		datasource.setDelegate(delegate);
+
 		int number = 42;
 		expect(delegate.getLoginTimeout()).andReturn(number);
 
-		replay(populator, delegate);
+		replay(mockContext, populator, delegate);
 		assertEquals(number, datasource.getLoginTimeout());
-		verify(populator, delegate);
+		verify(mockContext, populator, delegate);
 	}
 
 
 	@Test
 	public void testSetLoginTimeout() throws SQLException
 	{
+		datasource.setDelegate(delegate);
+
 		int number = 42;
 		delegate.setLoginTimeout(number);
 		expectLastCall();
 
-		replay(populator, delegate);
+		replay(mockContext, populator, delegate);
 		datasource.setLoginTimeout(number);
-		verify(populator, delegate);
+		verify(mockContext, populator, delegate);
 	}
 
 
 	@Test
 	public void testGetLogWriter() throws SQLException
 	{
+		datasource.setDelegate(delegate);
+
 		@SuppressWarnings("UseOfSystemOutOrSystemErr")
 		PrintWriter writer = new PrintWriter(System.out);
 		expect(delegate.getLogWriter()).andReturn(writer);
 
-		replay(populator, delegate);
+		replay(mockContext, populator, delegate);
 		assertSame(writer, datasource.getLogWriter());
-		verify(populator, delegate);
+		verify(mockContext, populator, delegate);
 	}
 
 
 	@Test
 	public void testSetLogWriter() throws SQLException
 	{
+		datasource.setDelegate(delegate);
+
 		@SuppressWarnings("UseOfSystemOutOrSystemErr")
 		PrintWriter writer = new PrintWriter(System.out);
 		delegate.setLogWriter(writer);
 		expectLastCall();
 
-		replay(populator, delegate);
+		replay(mockContext, populator, delegate);
 		datasource.setLogWriter(writer);
-		verify(populator, delegate);
+		verify(mockContext, populator, delegate);
 	}
 
 
 	@Test
 	public void testGetParentLogger() throws SQLException
 	{
+		datasource.setDelegate(delegate);
+
 		Logger logger = Logger.getAnonymousLogger();
 		expect(delegate.getParentLogger()).andReturn(logger);
 
-		replay(populator, delegate);
+		replay(mockContext, populator, delegate);
 		assertSame(logger, datasource.getParentLogger());
-		verify(populator, delegate);
+		verify(mockContext, populator, delegate);
 	}
 }
