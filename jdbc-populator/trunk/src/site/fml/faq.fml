@@ -78,7 +78,7 @@
 			<question>Does the context listener use import.sql like Hibernate uses import.sql?</question>
 			<answer>
 				<p>
-					For in-memory databases, there is only one difference (an improvement). These are the differences:
+					Almost. These are the differences:
 				</p>
 				<ol>
 					<li>
