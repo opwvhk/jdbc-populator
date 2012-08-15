@@ -36,9 +36,12 @@ import javax.naming.NamingException;
  */
 public class PopulatingDataSource extends DelegateDataSource
 {
-
 	/**
-	 * The populator to use to populate the database.
+	 * The JNDI name of the populator to populate the database with.
+	 */
+	private String populatorName;
+	/**
+	 * The populator to populate the database with.
 	 */
 	private JDBCPopulator populator;
 	/**
@@ -85,7 +88,7 @@ public class PopulatingDataSource extends DelegateDataSource
 			{
 				connection.setAutoCommit(false);
 			}
-			populator.populateDatabase(connection);
+			getPopulator().populateDatabase(connection);
 			connection.commit();
 		}
 		catch (IOException e)
@@ -94,6 +97,11 @@ public class PopulatingDataSource extends DelegateDataSource
 			throw new SQLException(e);
 		}
 		catch (SQLException e)
+		{
+			connection.rollback();
+			throw new SQLException(e);
+		}
+		catch (RuntimeException e)
 		{
 			connection.rollback();
 			throw e;
@@ -109,13 +117,61 @@ public class PopulatingDataSource extends DelegateDataSource
 
 
 	/**
-	 * Set the {@link JDBCPopulator} of this data source to a populator loaded from JNDI.
+	 * Set the populator used to populate the database to a populator loaded from JNDI.
 	 *
-	 * @param populator the name of the {@code JDBCPopulator} to delegate to
-	 * @throws NamingException when the data source cannot be found
+	 * @param jndiName the name of the populator to use
 	 */
-	public void setPopulator(String populator) throws NamingException
+	public void setPopulator(String jndiName)
 	{
-		this.populator = (JDBCPopulator)new InitialContext().lookup(populator);
+		populatorName = jndiName;
+	}
+
+
+	/**
+	 * Get the value of {@lilnk #populator}, loading the JNDI entry named {@link #populatorName} if necessary.
+	 *
+	 * @return the populator
+	 * @throws IllegalStateException when the data source cannot be found
+	 */
+	private JDBCPopulator getPopulator()
+	{
+		if (populator == null)
+		{
+			try
+			{
+				populator = loadPopulator();
+			}
+			catch (NamingException e)
+			{
+				throw new IllegalStateException("Failed to load the populator.", e);
+			}
+		}
+		return populator;
+	}
+
+
+	/**
+	 * Load the populator from JNDI.
+	 *
+	 * @return the populator
+	 * @throws NamingException when the populator cannot be found
+	 */
+	private JDBCPopulator loadPopulator() throws NamingException
+	{
+		Object jndiEntry = new InitialContext().lookup(populatorName);
+		if (jndiEntry instanceof JDBCPopulator)
+		{
+			return (JDBCPopulator)jndiEntry;
+		}
+		else
+		{
+			throw new NamingException(populatorName + " is not a " + JDBCPopulator.class.getName());
+		}
+	}
+
+
+	public void setPopulator(JDBCPopulator populator)
+	{
+		this.populator = populator;
 	}
 }

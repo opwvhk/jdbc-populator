@@ -14,7 +14,6 @@ import org.junit.Test;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -23,7 +22,6 @@ public class XADataSourceFactoryTest
 {
 	private static final String POPULATOR_NAME = "populatorJNDIName";
 	private static final String DELEGATE_NAME = "delegateJNDIName";
-	private Context mockContext;
 	private XADataSource delegate;
 
 
@@ -31,14 +29,14 @@ public class XADataSourceFactoryTest
 	public void initializeJNDI() throws NamingException
 	{
 		System.setProperty(Context.INITIAL_CONTEXT_FACTORY, DummyInitialContextFactory.class.getName());
-		mockContext = createMock(Context.class);
+		Context mockContext = createMock(Context.class);
 		DummyInitialContextFactory.setMockContext(mockContext);
 
 		JDBCPopulator populator = createMock(JDBCPopulator.class);
-		expect(mockContext.lookup(POPULATOR_NAME)).andReturn(populator);
+		expect(mockContext.lookup(POPULATOR_NAME)).andStubReturn(populator);
 
 		delegate = createMock(XADataSource.class);
-		expect(mockContext.lookup(DELEGATE_NAME)).andReturn(delegate);
+		expect(mockContext.lookup(DELEGATE_NAME)).andStubReturn(delegate);
 
 		replay(mockContext);
 	}
@@ -103,6 +101,5 @@ public class XADataSourceFactoryTest
 		Object dataSource = factory.getObjectInstance(null, null, null, null);
 		assertTrue(dataSource instanceof PopulatingXADataSource);
 		assertEquals(1, ((CommonDataSource)dataSource).getLoginTimeout());
-		verify(mockContext);
 	}
 }
