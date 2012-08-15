@@ -50,7 +50,6 @@ public class PopulatingDataSource extends DelegateDataSource
 	@Override
 	public Connection getConnection() throws SQLException
 	{
-
 		Connection connection = super.getConnection();
 		populateOnce(connection);
 		return connection;
@@ -60,7 +59,6 @@ public class PopulatingDataSource extends DelegateDataSource
 	@Override
 	public Connection getConnection(String username, String password) throws SQLException
 	{
-
 		Connection connection = super.getConnection(username, password);
 		populateOnce(connection);
 		return connection;
@@ -69,7 +67,6 @@ public class PopulatingDataSource extends DelegateDataSource
 
 	private void populateOnce(Connection connection) throws SQLException
 	{
-
 		if (populated)
 		{
 			return;
@@ -81,7 +78,6 @@ public class PopulatingDataSource extends DelegateDataSource
 
 	private void populateInTransaction(Connection connection) throws SQLException
 	{
-
 		boolean autocommit = connection.getAutoCommit();
 		try
 		{
@@ -120,7 +116,6 @@ public class PopulatingDataSource extends DelegateDataSource
 	 */
 	public void setPopulator(String populator) throws NamingException
 	{
-
 		this.populator = (JDBCPopulator)new InitialContext().lookup(populator);
 	}
 }

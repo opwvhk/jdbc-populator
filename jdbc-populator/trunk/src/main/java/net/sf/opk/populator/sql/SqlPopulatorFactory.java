@@ -1,8 +1,11 @@
 package net.sf.opk.populator.sql;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 import javax.naming.Context;
 import javax.naming.Name;
+import javax.naming.RefAddr;
+import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
 
@@ -13,67 +16,25 @@ import javax.naming.spi.ObjectFactory;
  */
 public class SqlPopulatorFactory implements ObjectFactory
 {
-	/**
-	 * The file to populate the database with.
-	 * Either this property or {@link #sqlDirectory} is must be specified (but not both).
-	 */
-	private String sqlFile;
-	/**
-	 * The file to populate the database with.
-	 * Either this property or {@link #sqlFile} is must be specified (but not both).
-	 */
-	private String sqlDirectory;
-
-
 	@Override
 	public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment)
 	{
-		validateProperties();
-
-		if (sqlFile == null)
+		// Customize the bean properties from our attributes
+		Enumeration<RefAddr> attributes = ((Reference) obj).getAll();
+		while (attributes.hasMoreElements())
 		{
-			return new DirectorySqlPopulator(sqlDirectory);
+			RefAddr attribute = attributes.nextElement();
+			String attributeName = attribute.getType();
+			String attributeValue = (String) attribute.getContent();
+			if ("sqlFile".equals(attributeName))
+			{
+				return new FileSqlPopulator(attributeValue);
+			}
+			else if ("sqlDirectory".equals(attributeName))
+			{
+				return new DirectorySqlPopulator(attributeValue);
+			}
 		}
-		else
-		{
-			return new FileSqlPopulator(sqlFile);
-		}
-	}
-
-
-	private void validateProperties()
-	{
-		if (sqlFile == null && sqlDirectory == null)
-		{
-			throw new IllegalStateException("Either SqlFile or SqlDirectory must be specified.");
-		}
-		if (sqlFile != null && sqlDirectory != null)
-		{
-			throw new IllegalStateException("Either SqlFile or SqlDirectory must be specified. Not both.");
-		}
-	}
-
-
-	public String getSqlFile()
-	{
-		return sqlFile;
-	}
-
-
-	public void setSqlFile(String sqlFile)
-	{
-		this.sqlFile = sqlFile;
-	}
-
-
-	public String getSqlDirectory()
-	{
-		return sqlDirectory;
-	}
-
-
-	public void setSqlDirectory(String sqlDirectory)
-	{
-		this.sqlDirectory = sqlDirectory;
+		throw new IllegalStateException("Either sqlFile or sqlDirectory must be specified.");
 	}
 }

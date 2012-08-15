@@ -1,119 +1,70 @@
 package net.sf.opk.populator.sql;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.sql.SQLException;
+import java.util.List;
+import javax.naming.NamingException;
+import javax.naming.RefAddr;
+import javax.naming.Reference;
+import javax.naming.StringRefAddr;
 
 import org.junit.Test;
 
-import net.sf.opk.populator.DatabaseTestBase;
-import net.sf.opk.populator.JDBCPopulator;
-import net.sf.opk.populator.MavenUtil;
-
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.junit.Assert.assertEquals;
+import static java.util.Arrays.asList;
+import static java.util.Collections.enumeration;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.assertTrue;
 
 
-public class SqlPopulatorFactoryTest extends DatabaseTestBase
+public class SqlPopulatorFactoryTest
 {
-	private final String EXISTING_SQL_FILE = MavenUtil.findSourcesDirectory() + "/test/classpaths/importOk/import.sql";
+	private static final RefAddr SQL_FILE_PROPERTY = new StringRefAddr("sqlFile", "randomPath");
+	private static final RefAddr SQL_DIRECTORY_PROPERTY = new StringRefAddr("sqlDirectory", "randomPath");
+	private static final RefAddr UNKNOWN_PROPERTY = new StringRefAddr("foo", "bar");
 
 
 	@Test(expected = IllegalStateException.class)
-	public void testPropertyError1() throws SQLException
+	public void testPropertyError1() throws SQLException, NamingException
 	{
 		SqlPopulatorFactory factory = new SqlPopulatorFactory();
-		factory.getObjectInstance(null, null, null, null);
+		factory.getObjectInstance(createReference(), null, null, null);
+	}
+
+
+	private Reference createReference(RefAddr... properties)
+	{
+		List<RefAddr> refAddrs = asList(properties);
+
+		Reference reference = createMock(Reference.class);
+		expect(reference.getAll()).andStubReturn(enumeration(refAddrs));
+		replay(reference);
+		return reference;
 	}
 
 
 	@Test(expected = IllegalStateException.class)
-	public void testPropertyError2() throws SQLException
+	public void testPropertyError2() throws SQLException, NamingException
 	{
 		SqlPopulatorFactory factory = new SqlPopulatorFactory();
-		factory.setSqlFile("foo");
-		factory.setSqlDirectory("foo");
-		factory.getObjectInstance(null, null, null, null);
+		factory.getObjectInstance(createReference(UNKNOWN_PROPERTY), null, null, null);
 	}
 
 
 	@Test
-	public void testPropertyValues() throws SQLException
+	public void testCreateFileSqlPopulator() throws SQLException, NamingException
 	{
-		String fileName = "fileName";
-		String directory = "directory";
-
 		SqlPopulatorFactory factory = new SqlPopulatorFactory();
-		factory.setSqlFile(fileName);
-		factory.setSqlDirectory(directory);
-
-		assertEquals(fileName, factory.getSqlFile());
-		assertEquals(directory, factory.getSqlDirectory());
+		Object instance = factory.getObjectInstance(createReference(SQL_FILE_PROPERTY), null, null, null);
+		assertTrue(instance instanceof FileSqlPopulator);
 	}
 
 
 	@Test
-	public void testFileSqlPopulator1() throws SQLException, IOException
+	public void testCreateDirectorySqlPopulator() throws SQLException, NamingException
 	{
 		SqlPopulatorFactory factory = new SqlPopulatorFactory();
-		factory.setSqlFile(EXISTING_SQL_FILE);
-
-		Object populator = factory.getObjectInstance(null, null, null, null);
-		assertTrue(populator instanceof JDBCPopulator);
-		assertTrue(populator instanceof FileSqlPopulator);
-
-		((JDBCPopulator)populator).populateDatabase(connectionForTest);
-		checkRecordCount(1L);
-	}
-
-
-	@Test(expected = SQLException.class)
-	public void testFileSqlPopulator2() throws SQLException, IOException
-	{
-		SqlPopulatorFactory factory = new SqlPopulatorFactory();
-		factory.setSqlFile(EXISTING_SQL_FILE + ".bak");
-
-		Object populator = factory.getObjectInstance(null, null, null, null);
-		assertTrue(populator instanceof JDBCPopulator);
-		assertTrue(populator instanceof FileSqlPopulator);
-
-		((JDBCPopulator)populator).populateDatabase(connectionForTest);
-	}
-
-
-	@Test
-	public void testDirSqlPopulator1() throws SQLException, IOException
-	{
-		File tempDir = new File(MavenUtil.findTargetDirectory() + "/testSqlFiles");
-		tempDir.mkdir();
-		Files.copy(new File(EXISTING_SQL_FILE).toPath(), new File(tempDir, "import1.sql").toPath(), REPLACE_EXISTING);
-		Files.copy(new ByteArrayInputStream(new byte[0]), new File(tempDir, "import2.sql").toPath(), REPLACE_EXISTING);
-
-		SqlPopulatorFactory factory = new SqlPopulatorFactory();
-		factory.setSqlDirectory(tempDir.getAbsolutePath());
-
-		Object populator = factory.getObjectInstance(null, null, null, null);
-		assertTrue(populator instanceof JDBCPopulator);
-		assertTrue(populator instanceof DirectorySqlPopulator);
-
-		((JDBCPopulator)populator).populateDatabase(connectionForTest);
-		checkRecordCount(1L);
-	}
-
-
-	@Test(expected = SQLException.class)
-	public void testDirSqlPopulator2() throws SQLException, IOException
-	{
-		SqlPopulatorFactory factory = new SqlPopulatorFactory();
-		factory.setSqlDirectory(EXISTING_SQL_FILE + "/foo");
-
-		Object populator = factory.getObjectInstance(null, null, null, null);
-		assertTrue(populator instanceof JDBCPopulator);
-		assertTrue(populator instanceof DirectorySqlPopulator);
-
-		((JDBCPopulator)populator).populateDatabase(connectionForTest);
+		Object instance = factory.getObjectInstance(createReference(SQL_DIRECTORY_PROPERTY), null, null, null);
+		assertTrue(instance instanceof DirectorySqlPopulator);
 	}
 }

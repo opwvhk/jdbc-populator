@@ -18,6 +18,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Logger;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.sql.DataSource;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 
@@ -31,7 +32,10 @@ import javax.sql.XADataSource;
  */
 public class DelegateXADataSource implements XADataSource
 {
-
+	/**
+	 * The JNDI name of the data source to delegate to.
+	 */
+	private String xaDelegateName;
 	/**
 	 * The data source to delegate to.
 	 */
@@ -42,26 +46,58 @@ public class DelegateXADataSource implements XADataSource
 	 * Set the delegate of this data source to a data source loaded from JNDI.
 	 *
 	 * @param jndiName the name of the data source to delegate to
+	 */
+	public void setDelegate(String jndiName)
+	{
+		xaDelegateName = jndiName;
+	}
+
+
+	/**
+	 * Get the value of {@lilnk #delegate}, loading the JNDI entry named {@link #xaDelegateName} if necessary.
+	 *
+	 * @return the data source
+	 * @throws IllegalStateException when the data source cannot be found
+	 */
+	private XADataSource getDelegate()
+	{
+		if (xaDelegate == null)
+		{
+			try
+			{
+				xaDelegate = loadDataSource();
+			}
+			catch (NamingException e)
+			{
+				throw new IllegalStateException("Failed to load the data source.", e);
+			}
+		}
+		return xaDelegate;
+	}
+
+
+	/**
+	 * Load the data source from JNDI.
+	 *
+	 * @return the data source
 	 * @throws NamingException when the data source cannot be found
 	 */
-	public void setDelegate(String jndiName) throws NamingException
+	private XADataSource loadDataSource() throws NamingException
 	{
-
-		Object datasource = new InitialContext().lookup(jndiName);
+		Object datasource = new InitialContext().lookup(xaDelegateName);
 		if (datasource instanceof XADataSource)
 		{
-			setDelegate((XADataSource)datasource);
+			return (XADataSource)datasource;
 		}
 		else
 		{
-			throw new NamingException(jndiName + " is not a " + XADataSource.class.getName());
+			throw new NamingException(xaDelegateName + " is not a " + DataSource.class.getName());
 		}
 	}
 
 
 	public void setDelegate(XADataSource delegate)
 	{
-
 		xaDelegate = delegate;
 	}
 
@@ -69,55 +105,48 @@ public class DelegateXADataSource implements XADataSource
 	@Override
 	public XAConnection getXAConnection() throws SQLException
 	{
-
-		return xaDelegate.getXAConnection();
+		return getDelegate().getXAConnection();
 	}
 
 
 	@Override
 	public XAConnection getXAConnection(String user, String password) throws SQLException
 	{
-
-		return xaDelegate.getXAConnection(user, password);
+		return getDelegate().getXAConnection(user, password);
 	}
 
 
 	@Override
 	public PrintWriter getLogWriter() throws SQLException
 	{
-
-		return xaDelegate.getLogWriter();
+		return getDelegate().getLogWriter();
 	}
 
 
 	@Override
 	public void setLogWriter(PrintWriter out) throws SQLException
 	{
-
-		xaDelegate.setLogWriter(out);
+		getDelegate().setLogWriter(out);
 	}
 
 
 	@Override
 	public void setLoginTimeout(int seconds) throws SQLException
 	{
-
-		xaDelegate.setLoginTimeout(seconds);
+		getDelegate().setLoginTimeout(seconds);
 	}
 
 
 	@Override
 	public int getLoginTimeout() throws SQLException
 	{
-
-		return xaDelegate.getLoginTimeout();
+		return getDelegate().getLoginTimeout();
 	}
 
 
 	@Override
 	public Logger getParentLogger() throws SQLFeatureNotSupportedException
 	{
-
-		return xaDelegate.getParentLogger();
+		return getDelegate().getParentLogger();
 	}
 }

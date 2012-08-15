@@ -45,7 +45,7 @@ public class ContextListenerTest extends DatabaseTestBase
 
 
 	@Before
-	public void setUp() throws Exception
+	public void initializeJNDI() throws Exception
 	{
 		listener = new ContextListener();
 
@@ -56,7 +56,7 @@ public class ContextListenerTest extends DatabaseTestBase
 
 
 	@After
-	public void tearDown() throws Exception
+	public void restoreJNDI() throws Exception
 	{
 		System.clearProperty(Context.INITIAL_CONTEXT_FACTORY);
 	}
@@ -89,7 +89,7 @@ public class ContextListenerTest extends DatabaseTestBase
 	public void testNoImport() throws Exception
 	{
 		DataSource nonJTADataSource = createMock(DataSource.class);
-		expect(nonJTADataSource.getConnection()).andStubReturn(connectionForTest);
+		expect(nonJTADataSource.getConnection()).andStubReturn(getConnectionForTest());
 		expect(mockContext.lookup("jdbc/myDataSourceNonJta")).andStubReturn(nonJTADataSource);
 		replay(mockContext, nonJTADataSource);
 
@@ -168,7 +168,7 @@ public class ContextListenerTest extends DatabaseTestBase
 		XADataSource jtaDataSource = createMock(XADataSource.class);
 		XAConnection xaConnection = createMock(XAConnection.class);
 		expect(jtaDataSource.getXAConnection()).andStubReturn(xaConnection);
-		expect(xaConnection.getConnection()).andStubReturn(connectionForTest);
+		expect(xaConnection.getConnection()).andStubReturn(getConnectionForTest());
 		expect(mockContext.lookup("jdbc/myDataSource")).andStubReturn(jtaDataSource);
 		replay(mockContext, jtaDataSource, xaConnection);
 
@@ -182,7 +182,7 @@ public class ContextListenerTest extends DatabaseTestBase
 	public void testPersistenceUnitNonJTA() throws Exception
 	{
 		DataSource nonJTADataSource = createMock(DataSource.class);
-		expect(nonJTADataSource.getConnection()).andStubReturn(connectionForTest);
+		expect(nonJTADataSource.getConnection()).andStubReturn(getConnectionForTest());
 		expect(mockContext.lookup("jdbc/myDataSourceNonJta")).andStubReturn(nonJTADataSource);
 		replay(mockContext, nonJTADataSource);
 
@@ -198,7 +198,7 @@ public class ContextListenerTest extends DatabaseTestBase
 		XADataSource jtaDataSource = createMock(XADataSource.class);
 		XAConnection xaConnection = createMock(XAConnection.class);
 		expect(jtaDataSource.getXAConnection()).andStubReturn(xaConnection);
-		expect(xaConnection.getConnection()).andStubReturn(connectionForTest);
+		expect(xaConnection.getConnection()).andStubReturn(getConnectionForTest());
 		expect(mockContext.lookup("jdbc/myDataSource")).andStubReturn(jtaDataSource);
 		replay(mockContext, jtaDataSource, xaConnection);
 
@@ -276,7 +276,7 @@ public class ContextListenerTest extends DatabaseTestBase
 		XADataSource jtaDataSource = createMock(XADataSource.class);
 		XAConnection xaConnection = createMock(XAConnection.class);
 		expect(jtaDataSource.getXAConnection()).andStubReturn(xaConnection);
-		expect(xaConnection.getConnection()).andStubReturn(connectionForTest);
+		expect(xaConnection.getConnection()).andStubReturn(getConnectionForTest());
 		expect(mockContext.lookup("jdbc/myDataSource")).andStubReturn(jtaDataSource);
 		replay(mockContext, jtaDataSource, xaConnection);
 

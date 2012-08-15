@@ -5,7 +5,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import javax.naming.Context;
 
 import org.junit.After;
 import org.junit.Before;
@@ -20,11 +19,12 @@ import static org.junit.Assert.assertEquals;
  */
 public class DatabaseTestBase
 {
-	protected Connection connectionForTest;
+	private Connection connectionForTest;
 	private Connection connectionToVerify;
 
+
 	@Before
-	public void setUpDatabase() throws Exception
+	public void setUpDatabase() throws ClassNotFoundException, SQLException
 	{
 		connectionForTest = openDbConnection();
 		connectionToVerify = openDbConnection();
@@ -36,10 +36,13 @@ public class DatabaseTestBase
 		connectionToVerify.commit();
 	}
 
-	protected Connection openDbConnection() throws SQLException
+
+	protected Connection openDbConnection() throws ClassNotFoundException, SQLException
 	{
+		Class.forName("org.hsqldb.jdbc.JDBCDriver");
 		return DriverManager.getConnection("jdbc:hsqldb:mem:testDb", "sa", "");
 	}
+
 
 	@After
 	public void tearDownDatabase() throws Exception
@@ -50,7 +53,6 @@ public class DatabaseTestBase
 
 		connectionToVerify.close();
 		connectionForTest.close();
-		System.clearProperty(Context.INITIAL_CONTEXT_FACTORY);
 	}
 
 
@@ -68,5 +70,11 @@ public class DatabaseTestBase
 			resultSet.close();
 			statement.close();
 		}
+	}
+
+
+	protected Connection getConnectionForTest()
+	{
+		return connectionForTest;
 	}
 }

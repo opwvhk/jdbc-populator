@@ -27,28 +27,25 @@ public class MavenUtil
 
 	public static File findTargetDirectory()
 	{
-		File markerFile = findMarkerFile();
-		File testClassesDirectory = markerFile.getParentFile();
+		File testClassesDirectory = findClasspathLocation();
 		return testClassesDirectory.getParentFile();
 	}
 
 
-	private static File findMarkerFile()
+	private static File findClasspathLocation()
 	{
 		try
 		{
-			URL markerUri = MavenUtil.class.getResource("/resourceToLocateSiblingDirectoryWith.txt");
-			if (markerUri == null)
-			{
-				throw new IllegalStateException("Missing marker file.");
-			}
-			return new File(markerUri.toURI()).getAbsoluteFile();
+			URL location = MavenUtil.class.getProtectionDomain().getCodeSource().getLocation();
+			return new File(location.toURI()).getAbsoluteFile();
 		}
 		catch (URISyntaxException e)
 		{
 			throw new IllegalStateException("Internal Java error: the classloader constructed an illegal URI.", e);
 		}
 	}
+
+
 
 
 	/**
