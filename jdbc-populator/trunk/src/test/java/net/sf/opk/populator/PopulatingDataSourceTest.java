@@ -56,6 +56,7 @@ public class PopulatingDataSourceTest
 
 		datasource = new PopulatingDataSource();
 		datasource.setDelegate(DELEGATE_JNDI_NAME);
+		datasource.setPopulator(POPULATOR_JNDI_NAME);
 
 		populator = createMock(JDBCPopulator.class);
 
@@ -88,19 +89,27 @@ public class PopulatingDataSourceTest
 	}
 
 
-	@Test(expected = ClassCastException.class)
-	public void testLookupFailure2() throws NamingException
+	@Test(expected = IllegalStateException.class)
+	public void testLookupFailure2() throws SQLException, NamingException
 	{
+		datasource.setDelegate(delegate);
+
+		Connection connection = createMock(Connection.class);
 		try
 		{
-			expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(new Object());
-			replay(mockContext);
+			expect(delegate.getConnection()).andReturn(connection);
+			expect(connection.getAutoCommit()).andReturn(false);
+			connection.rollback();
+			expectLastCall();
 
-			datasource.setPopulator(POPULATOR_JNDI_NAME);
+			expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(new Object());
+
+			replay(connection, mockContext, populator, delegate);
+			assertSame(connection, datasource.getConnection());
 		}
 		finally
 		{
-			verify(mockContext);
+			verify(connection, mockContext, populator, delegate);
 		}
 	}
 
@@ -130,6 +139,7 @@ public class PopulatingDataSourceTest
 	public void testGetConnection2a() throws SQLException, IOException, NamingException
 	{
 		datasource.setDelegate(delegate);
+		// Use lookup here so it's tested. Set a populator directly further on for readability.
 		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
 
 		Connection connection = createMock(Connection.class);
@@ -144,7 +154,6 @@ public class PopulatingDataSourceTest
 			expectLastCall().andThrow(new IOException());
 
 			replay(connection, mockContext, populator, delegate);
-			datasource.setPopulator(POPULATOR_JNDI_NAME);
 			assertSame(connection, datasource.getConnection());
 		}
 		finally
@@ -158,7 +167,7 @@ public class PopulatingDataSourceTest
 	public void testGetConnection3a() throws SQLException, IOException, NamingException
 	{
 		datasource.setDelegate(delegate);
-		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+		datasource.setPopulator(populator);
 
 		Connection connection = createMock(Connection.class);
 		try
@@ -172,7 +181,6 @@ public class PopulatingDataSourceTest
 			expectLastCall().andThrow(new SQLException());
 
 			replay(connection, mockContext, populator, delegate);
-			datasource.setPopulator(POPULATOR_JNDI_NAME);
 			assertSame(connection, datasource.getConnection());
 		}
 		finally
@@ -186,7 +194,7 @@ public class PopulatingDataSourceTest
 	public void testGetConnection4a() throws SQLException, IOException, NamingException
 	{
 		datasource.setDelegate(delegate);
-		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+		datasource.setPopulator(populator);
 
 		Connection connection = createMock(Connection.class);
 		expect(delegate.getConnection()).andReturn(connection);
@@ -198,7 +206,6 @@ public class PopulatingDataSourceTest
 		expectLastCall();
 
 		replay(connection, mockContext, populator, delegate);
-		datasource.setPopulator(POPULATOR_JNDI_NAME);
 		assertSame(connection, datasource.getConnection());
 		verify(connection, mockContext, populator, delegate);
 	}
@@ -208,7 +215,7 @@ public class PopulatingDataSourceTest
 	public void testGetConnection5a() throws SQLException, IOException, NamingException
 	{
 		datasource.setDelegate(delegate);
-		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+		datasource.setPopulator(populator);
 
 		Connection connection = createMock(Connection.class);
 		expect(delegate.getConnection()).andReturn(connection).times(2);
@@ -220,7 +227,6 @@ public class PopulatingDataSourceTest
 		expectLastCall();
 
 		replay(connection, mockContext, populator, delegate);
-		datasource.setPopulator(POPULATOR_JNDI_NAME);
 		assertSame(connection, datasource.getConnection());
 		assertSame(connection, datasource.getConnection());
 		verify(connection, mockContext, populator, delegate);
@@ -231,7 +237,7 @@ public class PopulatingDataSourceTest
 	public void testGetConnection6a() throws SQLException, IOException, NamingException
 	{
 		datasource.setDelegate(delegate);
-		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+		datasource.setPopulator(populator);
 
 		Connection connection = createMock(Connection.class);
 		expect(delegate.getConnection()).andReturn(connection);
@@ -247,7 +253,6 @@ public class PopulatingDataSourceTest
 		expectLastCall();
 
 		replay(connection, mockContext, populator, delegate);
-		datasource.setPopulator(POPULATOR_JNDI_NAME);
 		assertSame(connection, datasource.getConnection());
 		verify(connection, mockContext, populator, delegate);
 	}
@@ -281,7 +286,7 @@ public class PopulatingDataSourceTest
 	public void testGetConnection2b() throws SQLException, IOException, NamingException
 	{
 		datasource.setDelegate(delegate);
-		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+		datasource.setPopulator(populator);
 
 		final String user = "username";
 		final String pass = "password";
@@ -298,7 +303,6 @@ public class PopulatingDataSourceTest
 			expectLastCall().andThrow(new IOException());
 
 			replay(connection, mockContext, populator, delegate);
-			datasource.setPopulator(POPULATOR_JNDI_NAME);
 			assertSame(connection, datasource.getConnection(user, pass));
 		}
 		finally
@@ -312,7 +316,7 @@ public class PopulatingDataSourceTest
 	public void testGetConnection3b() throws SQLException, IOException, NamingException
 	{
 		datasource.setDelegate(delegate);
-		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+		datasource.setPopulator(populator);
 
 		final String user = "username";
 		final String pass = "password";
@@ -329,7 +333,6 @@ public class PopulatingDataSourceTest
 			expectLastCall().andThrow(new SQLException());
 
 			replay(connection, mockContext, populator, delegate);
-			datasource.setPopulator(POPULATOR_JNDI_NAME);
 			assertSame(connection, datasource.getConnection(user, pass));
 		}
 		finally
@@ -343,7 +346,7 @@ public class PopulatingDataSourceTest
 	public void testGetConnection4b() throws SQLException, IOException, NamingException
 	{
 		datasource.setDelegate(delegate);
-		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+		datasource.setPopulator(populator);
 
 		final String user = "username";
 		final String pass = "password";
@@ -358,7 +361,6 @@ public class PopulatingDataSourceTest
 		expectLastCall();
 
 		replay(connection, mockContext, populator, delegate);
-		datasource.setPopulator(POPULATOR_JNDI_NAME);
 		assertSame(connection, datasource.getConnection(user, pass));
 		verify(connection, mockContext, populator, delegate);
 	}
@@ -368,7 +370,7 @@ public class PopulatingDataSourceTest
 	public void testGetConnection5b() throws SQLException, IOException, NamingException
 	{
 		datasource.setDelegate(delegate);
-		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+		datasource.setPopulator(populator);
 
 		final String user = "username";
 		final String pass = "password";
@@ -383,7 +385,6 @@ public class PopulatingDataSourceTest
 		expectLastCall();
 
 		replay(connection, mockContext, populator, delegate);
-		datasource.setPopulator(POPULATOR_JNDI_NAME);
 		assertSame(connection, datasource.getConnection(user, pass));
 		assertSame(connection, datasource.getConnection(user, pass));
 		verify(connection, mockContext, populator, delegate);
@@ -394,7 +395,7 @@ public class PopulatingDataSourceTest
 	public void testGetConnection6b() throws SQLException, IOException, NamingException
 	{
 		datasource.setDelegate(delegate);
-		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
+		datasource.setPopulator(populator);
 
 		final String user = "username";
 		final String pass = "password";
@@ -413,7 +414,6 @@ public class PopulatingDataSourceTest
 		expectLastCall();
 
 		replay(connection, mockContext, populator, delegate);
-		datasource.setPopulator(POPULATOR_JNDI_NAME);
 		assertSame(connection, datasource.getConnection(user, pass));
 		verify(connection, mockContext, populator, delegate);
 	}

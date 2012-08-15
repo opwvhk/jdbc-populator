@@ -20,7 +20,6 @@ import static java.util.Collections.enumeration;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -32,7 +31,6 @@ public class DataSourceFactoryTest
 	private static final String DELEGATE_NAME = "delegateJNDIName";
 	private static final RefAddr DELEGATE_PROPERTY = new StringRefAddr("delegate", "delegateJNDIName");
 	private static final RefAddr UNKNOWN_PROPERTY = new StringRefAddr("foo", "bar");
-	private Context mockContext;
 	private DataSource delegate;
 
 
@@ -40,14 +38,14 @@ public class DataSourceFactoryTest
 	public void initializeJNDI() throws NamingException
 	{
 		System.setProperty(Context.INITIAL_CONTEXT_FACTORY, DummyInitialContextFactory.class.getName());
-		mockContext = createMock(Context.class);
+		Context mockContext = createMock(Context.class);
 		DummyInitialContextFactory.setMockContext(mockContext);
 
 		JDBCPopulator populator = createMock(JDBCPopulator.class);
-		expect(mockContext.lookup(POPULATOR_NAME)).andReturn(populator);
+		expect(mockContext.lookup(POPULATOR_NAME)).andStubReturn(populator);
 
 		delegate = createMock(DataSource.class);
-		expect(mockContext.lookup(DELEGATE_NAME)).andReturn(delegate);
+		expect(mockContext.lookup(DELEGATE_NAME)).andStubReturn(delegate);
 
 		replay(mockContext);
 	}
@@ -123,6 +121,5 @@ public class DataSourceFactoryTest
 
 		assertTrue(dataSource instanceof PopulatingDataSource);
 		assertEquals(1, ((CommonDataSource)dataSource).getLoginTimeout());
-		verify(mockContext);
 	}
 }
