@@ -54,8 +54,8 @@ public class PopulatingXADataSourceTest
 		DummyInitialContextFactory.setMockContext(mockContext);
 
 		datasource = new PopulatingXADataSource();
-		datasource.setDelegate(DELEGATE_JNDI_NAME);
-		datasource.setPopulator(POPULATOR_JNDI_NAME);
+		datasource.setDelegateName(DELEGATE_JNDI_NAME);
+		datasource.setPopulatorName(POPULATOR_JNDI_NAME);
 
 		populator = createMock(JDBCPopulator.class);
 
@@ -107,7 +107,7 @@ public class PopulatingXADataSourceTest
 			expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(new Object());
 
 			replay(xaConnection, connection, mockContext, populator, delegate);
-			datasource.setPopulator(POPULATOR_JNDI_NAME);
+			datasource.setPopulatorName(POPULATOR_JNDI_NAME);
 			datasource.getXAConnection();
 		}
 		finally
@@ -119,7 +119,7 @@ public class PopulatingXADataSourceTest
 			expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(new Object());
 			replay(mockContext);
 
-			datasource.setPopulator(POPULATOR_JNDI_NAME);
+			datasource.setPopulatorName(POPULATOR_JNDI_NAME);
 		}
 		finally
 		{
@@ -173,7 +173,7 @@ public class PopulatingXADataSourceTest
 			expectLastCall().andThrow(new IOException());
 
 			replay(xaConnection, connection, mockContext, populator, delegate);
-			datasource.setPopulator(POPULATOR_JNDI_NAME);
+			datasource.setPopulatorName(POPULATOR_JNDI_NAME);
 			datasource.getXAConnection();
 		}
 		finally
@@ -204,7 +204,7 @@ public class PopulatingXADataSourceTest
 			expectLastCall().andThrow(new SQLException());
 
 			replay(xaConnection, connection, mockContext, populator, delegate);
-			datasource.setPopulator(POPULATOR_JNDI_NAME);
+			datasource.setPopulatorName(POPULATOR_JNDI_NAME);
 			datasource.getXAConnection();
 		}
 		finally
@@ -234,7 +234,7 @@ public class PopulatingXADataSourceTest
 		expectLastCall();
 
 		replay(xaConnection, connection, mockContext, populator, delegate);
-		datasource.setPopulator(POPULATOR_JNDI_NAME);
+		datasource.setPopulatorName(POPULATOR_JNDI_NAME);
 		assertSame(xaConnection, datasource.getXAConnection());
 		verify(xaConnection, connection, mockContext, populator, delegate);
 	}
@@ -260,7 +260,7 @@ public class PopulatingXADataSourceTest
 		expectLastCall();
 
 		replay(xaConnection, connection, mockContext, populator, delegate);
-		datasource.setPopulator(POPULATOR_JNDI_NAME);
+		datasource.setPopulatorName(POPULATOR_JNDI_NAME);
 		assertSame(xaConnection, datasource.getXAConnection());
 		assertSame(xaConnection, datasource.getXAConnection());
 		verify(xaConnection, connection, mockContext, populator, delegate);
@@ -291,7 +291,7 @@ public class PopulatingXADataSourceTest
 		expectLastCall();
 
 		replay(xaConnection, connection, mockContext, populator, delegate);
-		datasource.setPopulator(POPULATOR_JNDI_NAME);
+		datasource.setPopulatorName(POPULATOR_JNDI_NAME);
 		assertSame(xaConnection, datasource.getXAConnection());
 		verify(xaConnection, connection, mockContext, populator, delegate);
 	}
@@ -347,7 +347,7 @@ public class PopulatingXADataSourceTest
 			expectLastCall().andThrow(new IOException());
 
 			replay(xaConnection, connection, mockContext, populator, delegate);
-			datasource.setPopulator(POPULATOR_JNDI_NAME);
+			datasource.setPopulatorName(POPULATOR_JNDI_NAME);
 			datasource.getXAConnection(user, pass);
 		}
 		finally
@@ -381,7 +381,7 @@ public class PopulatingXADataSourceTest
 			expectLastCall().andThrow(new SQLException());
 
 			replay(xaConnection, connection, mockContext, populator, delegate);
-			datasource.setPopulator(POPULATOR_JNDI_NAME);
+			datasource.setPopulatorName(POPULATOR_JNDI_NAME);
 			datasource.getXAConnection(user, pass);
 		}
 		finally
@@ -414,7 +414,7 @@ public class PopulatingXADataSourceTest
 		expectLastCall();
 
 		replay(xaConnection, connection, mockContext, populator, delegate);
-		datasource.setPopulator(POPULATOR_JNDI_NAME);
+		datasource.setPopulatorName(POPULATOR_JNDI_NAME);
 		assertSame(xaConnection, datasource.getXAConnection(user, pass));
 		verify(xaConnection, connection, mockContext, populator, delegate);
 	}
@@ -443,7 +443,7 @@ public class PopulatingXADataSourceTest
 		expectLastCall();
 
 		replay(xaConnection, connection, mockContext, populator, delegate);
-		datasource.setPopulator(POPULATOR_JNDI_NAME);
+		datasource.setPopulatorName(POPULATOR_JNDI_NAME);
 		assertSame(xaConnection, datasource.getXAConnection(user, pass));
 		assertSame(xaConnection, datasource.getXAConnection(user, pass));
 		verify(xaConnection, connection, mockContext, populator, delegate);
@@ -477,7 +477,7 @@ public class PopulatingXADataSourceTest
 		expectLastCall();
 
 		replay(xaConnection, connection, mockContext, populator, delegate);
-		datasource.setPopulator(POPULATOR_JNDI_NAME);
+		datasource.setPopulatorName(POPULATOR_JNDI_NAME);
 		assertSame(xaConnection, datasource.getXAConnection(user, pass));
 		verify(xaConnection, connection, mockContext, populator, delegate);
 	}

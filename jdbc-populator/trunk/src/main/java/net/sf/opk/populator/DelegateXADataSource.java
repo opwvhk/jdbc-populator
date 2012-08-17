@@ -47,14 +47,14 @@ public class DelegateXADataSource implements XADataSource
 	 *
 	 * @param jndiName the name of the data source to delegate to
 	 */
-	public void setDelegate(String jndiName)
+	public void setDelegateName(String jndiName)
 	{
 		xaDelegateName = jndiName;
 	}
 
 
 	/**
-	 * Get the value of {@lilnk #delegate}, loading the JNDI entry named {@link #xaDelegateName} if necessary.
+	 * Get the value of {@link #xaDelegate}, loading the JNDI entry named {@link #xaDelegateName} if necessary.
 	 *
 	 * @return the data source
 	 * @throws IllegalStateException when the data source cannot be found

@@ -126,14 +126,14 @@ public class PopulatingXADataSource extends DelegateXADataSource
 	 *
 	 * @param jndiName the name of the populator to use
 	 */
-	public void setPopulator(String jndiName)
+	public void setPopulatorName(String jndiName)
 	{
 		populatorName = jndiName;
 	}
 
 
 	/**
-	 * Get the value of {@lilnk #populator}, loading the JNDI entry named {@link #populatorName} if necessary.
+	 * Get the value of {@link #populator}, loading the JNDI entry named {@link #populatorName} if necessary.
 	 *
 	 * @return the populator
 	 * @throws IllegalStateException when the data source cannot be found

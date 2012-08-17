@@ -30,8 +30,8 @@ public class XADataSourceFactory implements ObjectFactory
 		validateProperties();
 
 		PopulatingXADataSource dataSource = new PopulatingXADataSource();
-		dataSource.setDelegate(delegate);
-		dataSource.setPopulator(populator);
+		dataSource.setDelegateName(delegate);
+		dataSource.setPopulatorName(populator);
 		return dataSource;
 	}
 

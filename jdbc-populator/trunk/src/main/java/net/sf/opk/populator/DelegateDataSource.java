@@ -46,14 +46,14 @@ public class DelegateDataSource implements DataSource
 	 *
 	 * @param jndiName the name of the data source to delegate to
 	 */
-	public void setDelegate(String jndiName)
+	public void setDelegateName(String jndiName)
 	{
 		delegateName = jndiName;
 	}
 
 
 	/**
-	 * Get the value of {@lilnk #delegate}, loading the JNDI entry named {@link #delegateName} if necessary.
+	 * Get the value of {@link #delegate}, loading the JNDI entry named {@link #delegateName} if necessary.
 	 *
 	 * @return the data source
 	 * @throws IllegalStateException when the data source cannot be found
