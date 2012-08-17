@@ -55,8 +55,8 @@ public class PopulatingDataSourceTest
 		DummyInitialContextFactory.setMockContext(mockContext);
 
 		datasource = new PopulatingDataSource();
-		datasource.setDelegate(DELEGATE_JNDI_NAME);
-		datasource.setPopulator(POPULATOR_JNDI_NAME);
+		datasource.setDelegateName(DELEGATE_JNDI_NAME);
+		datasource.setPopulatorName(POPULATOR_JNDI_NAME);
 
 		populator = createMock(JDBCPopulator.class);
 

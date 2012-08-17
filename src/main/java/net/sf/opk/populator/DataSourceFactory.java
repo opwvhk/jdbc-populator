@@ -47,8 +47,8 @@ public class DataSourceFactory implements ObjectFactory
 		}
 
 		PopulatingDataSource dataSource = new PopulatingDataSource();
-		dataSource.setDelegate(delegate);
-		dataSource.setPopulator(populator);
+		dataSource.setDelegateName(delegate);
+		dataSource.setPopulatorName(populator);
 		return dataSource;
 	}
 }
