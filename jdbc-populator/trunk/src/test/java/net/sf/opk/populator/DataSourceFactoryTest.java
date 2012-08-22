@@ -27,9 +27,9 @@ import static org.junit.Assert.assertTrue;
 public class DataSourceFactoryTest
 {
 	private static final String POPULATOR_NAME = "populatorJNDIName";
-	private static final RefAddr POPULATOR_PROPERTY = new StringRefAddr("populator", "populatorJNDIName");
+	private static final RefAddr POPULATOR_PROPERTY = new StringRefAddr("populatorName", "populatorJNDIName");
 	private static final String DELEGATE_NAME = "delegateJNDIName";
-	private static final RefAddr DELEGATE_PROPERTY = new StringRefAddr("delegate", "delegateJNDIName");
+	private static final RefAddr DELEGATE_PROPERTY = new StringRefAddr("delegateName", "delegateJNDIName");
 	private static final RefAddr UNKNOWN_PROPERTY = new StringRefAddr("foo", "bar");
 	private DataSource delegate;
 

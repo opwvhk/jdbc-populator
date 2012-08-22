@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -27,6 +29,11 @@ import java.util.NoSuchElementException;
  */
 public class SqlStatementIterator implements Iterator<String>
 {
+	/**
+	 * Logger for this class.
+	 */
+	private static final Logger LOGGER = Logger.getLogger(SqlStatementIterator.class.getName());
+
 	private BufferedReader reader;
 	private String nextSqlStatement;
 
@@ -47,13 +54,14 @@ public class SqlStatementIterator implements Iterator<String>
 			{
 				nextSqlStatement = readSqlStatement();
 			}
-			catch (IOException ignored)
+			catch (IOException e)
 			{
+				LOGGER.log(Level.WARNING, "Failed to read the next SQL statement.", e);
 				try
 				{
 					reader.close();
 				}
-				catch (IOException e)
+				catch (IOException ignored)
 				{
 					// Failed to close the input. Ignoring; we cannot do anything about it.
 				}
@@ -91,13 +99,16 @@ public class SqlStatementIterator implements Iterator<String>
 
 		if (line == null)
 		{
+			LOGGER.finer("Skipping trailing content (after the final semicolon).");
 			// There was no semi-colon terminated statement.
 			return null;
 		}
 		else
 		{
 			// Return the statement, skipping the initial space.
-			return statement.substring(1);
+			String sqlStatement = statement.substring(1);
+			LOGGER.log(Level.FINE, "SQL statement: {0}", sqlStatement);
+			return sqlStatement;
 		}
 	}
 

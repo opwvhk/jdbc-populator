@@ -35,6 +35,7 @@ import java.sql.SQLException;
  */
 public interface JDBCPopulator
 {
+	// TODO: Create a composite JDBCPopulator implementation
 
 	/**
 	 * Populate the database.

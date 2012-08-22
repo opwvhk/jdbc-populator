@@ -2,8 +2,12 @@ package net.sf.opk.populator;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 import javax.naming.Context;
 import javax.naming.NamingException;
+import javax.naming.RefAddr;
+import javax.naming.Reference;
+import javax.naming.StringRefAddr;
 import javax.sql.CommonDataSource;
 import javax.sql.XADataSource;
 
@@ -11,6 +15,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.enumeration;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
@@ -21,7 +27,10 @@ import static org.junit.Assert.assertTrue;
 public class XADataSourceFactoryTest
 {
 	private static final String POPULATOR_NAME = "populatorJNDIName";
+	private static final RefAddr POPULATOR_PROPERTY = new StringRefAddr("populatorName", "populatorJNDIName");
 	private static final String DELEGATE_NAME = "delegateJNDIName";
+	private static final RefAddr DELEGATE_PROPERTY = new StringRefAddr("delegateName", "delegateJNDIName");
+	private static final RefAddr UNKNOWN_PROPERTY = new StringRefAddr("foo", "bar");
 	private XADataSource delegate;
 
 
@@ -53,7 +62,18 @@ public class XADataSourceFactoryTest
 	public void testPropertyError1() throws SQLException, NamingException
 	{
 		XADataSourceFactory factory = new XADataSourceFactory();
-		factory.getObjectInstance(null, null, null, null);
+		factory.getObjectInstance(createReference(), null, null, null);
+	}
+
+
+	private Reference createReference(RefAddr... properties)
+	{
+		List<RefAddr> refAddrs = asList(properties);
+
+		Reference reference = createMock(Reference.class);
+		expect(reference.getAll()).andStubReturn(enumeration(refAddrs));
+		replay(reference);
+		return reference;
 	}
 
 
@@ -61,8 +81,7 @@ public class XADataSourceFactoryTest
 	public void testPropertyError2() throws SQLException, NamingException
 	{
 		XADataSourceFactory factory = new XADataSourceFactory();
-		factory.setDelegate(DELEGATE_NAME);
-		factory.getObjectInstance(null, null, null, null);
+		factory.getObjectInstance(createReference(UNKNOWN_PROPERTY), null, null, null);
 	}
 
 
@@ -70,35 +89,36 @@ public class XADataSourceFactoryTest
 	public void testPropertyError3() throws SQLException, NamingException
 	{
 		XADataSourceFactory factory = new XADataSourceFactory();
-		factory.setPopulator(POPULATOR_NAME);
-		factory.getObjectInstance(null, null, null, null);
+		factory.getObjectInstance(createReference(DELEGATE_PROPERTY), null, null, null);
+	}
+
+
+	@Test(expected = IllegalStateException.class)
+	public void testPropertyError4() throws SQLException, NamingException
+	{
+		XADataSourceFactory factory = new XADataSourceFactory();
+		factory.getObjectInstance(createReference(POPULATOR_PROPERTY, UNKNOWN_PROPERTY), null, null, null);
 	}
 
 
 	@Test
-	public void testPropertyValues() throws SQLException
+	public void testPropertyValues() throws SQLException, NamingException
 	{
 		XADataSourceFactory factory = new XADataSourceFactory();
-		factory.setDelegate(DELEGATE_NAME);
-		factory.setPopulator(POPULATOR_NAME);
-
-		assertEquals(DELEGATE_NAME, factory.getDelegate());
-		assertEquals(POPULATOR_NAME, factory.getPopulator());
+		factory.getObjectInstance(createReference(DELEGATE_PROPERTY, POPULATOR_PROPERTY), null, null, null);
 	}
 
 
 	@Test
 	public void testCreateObject() throws SQLException, IOException, NamingException
 	{
-		XADataSourceFactory factory = new XADataSourceFactory();
-		factory.setDelegate(DELEGATE_NAME);
-		factory.setPopulator(POPULATOR_NAME);
-
 		expect(delegate.getLoginTimeout()).andReturn(1);
-
 		replay(delegate);
 
-		Object dataSource = factory.getObjectInstance(null, null, null, null);
+		XADataSourceFactory factory = new XADataSourceFactory();
+		Reference reference = createReference(DELEGATE_PROPERTY, POPULATOR_PROPERTY);
+		Object dataSource = factory.getObjectInstance(reference, null, null, null);
+
 		assertTrue(dataSource instanceof PopulatingXADataSource);
 		assertEquals(1, ((CommonDataSource)dataSource).getLoginTimeout());
 	}

@@ -1,9 +1,12 @@
 package net.sf.opk.populator;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
+import javax.naming.RefAddr;
+import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
 
@@ -14,57 +17,39 @@ import javax.naming.spi.ObjectFactory;
  */
 public class XADataSourceFactory implements ObjectFactory
 {
-	/**
-	 * The JNDI name of the XADataSource delegate to use.
-	 */
-	private String delegate;
-	/**
-	 * The JNDI name of the populator to use.
-	 */
-	private String populator;
-
-
 	@Override
-	public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws NamingException
+	public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment)
+			throws NamingException
 	{
-		validateProperties();
+		String delegate = null;
+		String populator = null;
+
+		// Customize the bean properties from our attributes
+		Enumeration<RefAddr> attributes = ((Reference)obj).getAll();
+		while (attributes.hasMoreElements())
+		{
+			RefAddr attribute = attributes.nextElement();
+			String attributeName = attribute.getType();
+			String attributeValue = (String)attribute.getContent();
+			if ("delegateName".equals(attributeName))
+			{
+				delegate = attributeValue;
+			}
+			else if ("populatorName".equals(attributeName))
+			{
+				populator = attributeValue;
+			}
+		}
+
+		if (delegate == null || populator == null)
+		{
+			throw new IllegalStateException(
+					"The properties 'delegateName' and 'populatorName' must both be specified.");
+		}
 
 		PopulatingXADataSource dataSource = new PopulatingXADataSource();
 		dataSource.setDelegateName(delegate);
 		dataSource.setPopulatorName(populator);
 		return dataSource;
-	}
-
-
-	private void validateProperties()
-	{
-		if (delegate == null || populator == null)
-		{
-			throw new IllegalStateException("The properties 'delegate' and 'populator' must both be specified.");
-		}
-	}
-
-
-	public String getDelegate()
-	{
-		return delegate;
-	}
-
-
-	public void setDelegate(String delegate)
-	{
-		this.delegate = delegate;
-	}
-
-
-	public String getPopulator()
-	{
-		return populator;
-	}
-
-
-	public void setPopulator(String populator)
-	{
-		this.populator = populator;
 	}
 }

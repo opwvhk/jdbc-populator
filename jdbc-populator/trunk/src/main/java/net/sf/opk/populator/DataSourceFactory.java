@@ -31,11 +31,11 @@ public class DataSourceFactory implements ObjectFactory
 			RefAddr attribute = attributes.nextElement();
 			String attributeName = attribute.getType();
 			String attributeValue = (String)attribute.getContent();
-			if ("delegate".equals(attributeName))
+			if ("delegateName".equals(attributeName))
 			{
 				delegate = attributeValue;
 			}
-			else if ("populator".equals(attributeName))
+			else if ("populatorName".equals(attributeName))
 			{
 				populator = attributeValue;
 			}
@@ -43,7 +43,8 @@ public class DataSourceFactory implements ObjectFactory
 
 		if (delegate == null || populator == null)
 		{
-			throw new IllegalStateException("The properties 'delegate' and 'populator' must both be specified.");
+			throw new IllegalStateException(
+					"The properties 'delegateName' and 'populatorName' must both be specified.");
 		}
 
 		PopulatingDataSource dataSource = new PopulatingDataSource();

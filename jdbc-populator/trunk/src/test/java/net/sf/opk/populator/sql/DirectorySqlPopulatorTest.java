@@ -6,10 +6,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 
-import net.sf.opk.populator.DatabaseTestBase;
-import net.sf.opk.populator.MavenUtil;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import net.sf.opk.populator.DatabaseTestBase;
+import net.sf.opk.populator.util.MavenPaths;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Arrays.asList;
@@ -17,8 +18,8 @@ import static java.util.Arrays.asList;
 
 public class DirectorySqlPopulatorTest extends DatabaseTestBase
 {
-	private static final File SQL_SOURCE_DIRECTORY = new File(MavenUtil.findSourcesDirectory(), "test/sql");
-	private static final File SQL_TARGET_DIRECTORY = new File(MavenUtil.findTargetDirectory(), "test-sql");
+	private static final File SQL_SOURCE_DIRECTORY = new File(MavenPaths.findSourcesDirectory(), "test/sql");
+	private static final File SQL_TARGET_DIRECTORY = new File(MavenPaths.findTargetDirectory(), "test-sql");
 
 
 	@BeforeClass
