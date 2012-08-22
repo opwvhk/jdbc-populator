@@ -28,7 +28,10 @@ import javax.sql.XADataSource;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import net.sf.opk.populator.util.MavenPaths;
 
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
@@ -38,8 +41,10 @@ import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertNull;
 
 
+@Ignore
 public class ContextListenerTest extends DatabaseTestBase
 {
+	// TODO: Remove the web fragment
 	private ContextListener listener;
 	private Context mockContext;
 
@@ -116,7 +121,7 @@ public class ContextListenerTest extends DatabaseTestBase
 
 	private File findClasspathsDirectory() throws URISyntaxException
 	{
-		File srcDirectory = MavenUtil.findSourcesDirectory();
+		File srcDirectory = MavenPaths.findSourcesDirectory();
 		File testDirectory = new File(srcDirectory, "test");
 		File classpathsDirectory = new File(testDirectory, "classpaths");
 		return classpathsDirectory.getAbsoluteFile();

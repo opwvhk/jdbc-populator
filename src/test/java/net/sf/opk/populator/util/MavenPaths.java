@@ -1,4 +1,4 @@
-package net.sf.opk.populator;
+package net.sf.opk.populator.util;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -10,7 +10,7 @@ import java.net.URL;
  *
  * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
-public class MavenUtil
+public class MavenPaths
 {
 	public static File findSourcesDirectory()
 	{
@@ -36,7 +36,7 @@ public class MavenUtil
 	{
 		try
 		{
-			URL location = MavenUtil.class.getProtectionDomain().getCodeSource().getLocation();
+			URL location = MavenPaths.class.getProtectionDomain().getCodeSource().getLocation();
 			return new File(location.toURI()).getAbsoluteFile();
 		}
 		catch (URISyntaxException e)
@@ -51,7 +51,7 @@ public class MavenUtil
 	/**
 	 * Utility class: do not instantiate.
 	 */
-	private MavenUtil()
+	private MavenPaths()
 	{
 		// Nothing to do.
 	}

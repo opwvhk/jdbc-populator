@@ -1,0 +1,91 @@
+	---
+	Introduction
+	---
+	Oscar Westra van Holthe - Kind
+	---
+	2012-08-21
+	---
+
+Other JNDI Containers
+
+  In addidion to GlassFish, JDBC Populator also supports other JNDI implementations. It has been tested on Tomcat 7.0
+  and Jetty 8.1, and thus should work in any situation. The reason is that GlassFish,
+  Tomcat and Jetty have vastly different methods of populating their JNDI namespace.
+
+  In short:
+
+  * With Jetty, the JNDI configuration describes how to instantiate the <<<DataSource>>> and <<<JDBCPopulator>>>
+  directly.
+
+  * With GlasFish, you specify the class names and some property values (primitives, wrappers and String only). The
+  properties are the JNDI names of the required objects.
+
+  * With Tomcat, the <<<ObjectFactory>>> implementations allow a fully custom JNDI setup.
+
+  []
+
+  So whether your favorite container used Java Beans directly, prefers an <<<ObjectFactory>>> or anything in between,
+  it's possible.
+
+
+* Jetty
+
+For the example below, you also need a database connection pool implementation. The example below uses Commons DBCP.
+
+Example <<<jetty-env.xml>>>:
+
++---
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+<Configure class="org.eclipse.jetty.webapp.WebAppContext">
+	<New id="underlyingDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<Set name="driverClassName">org.hsqldb.jdbcDriver</Set>
+		<Set name="url">jdbc:hsqldb:mem:TestDB</Set>
+		<Set name="username">sa</Set>
+		<Set name="password"/>
+		<Set name="maxActive">5</Set>
+		<Set name="maxIdle">5</Set>
+		<Set name="minIdle">5</Set>
+	</New>
+
+	<New id="populator" class="net.sf.opk.populator.sql.FileSqlPopulator">
+		<Arg>src/main/config/database.sql</Arg>
+	</New>
+
+	<New class="org.eclipse.jetty.plus.jndi.Resource">
+		<Arg>jdbc/applicationDataSource</Arg>
+		<Arg>
+			<New class="net.sf.opk.populator.PopulatingDataSource">
+				<Call name="setPopulator">
+					<Arg><Ref id="populator"/></Arg>
+				</Call>
+				<Call name="setDelegate">
+					<Arg><Ref id="underlyingDataSource"/></Arg>
+				</Call>
+			</New>
+		</Arg>
+	</New>
+</Configure>
++---
+
+
+* Tomcat
+
+Example <<<context.xml>>>:
+
++---
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+	<Resource name="jdbc/underlyingDataSource"
+	          type="javax.sql.DataSource" auth="Container" driverClassName="org.hsqldb.jdbcDriver"
+	          url="jdbc:hsqldb:mem:TestDB" username="sa" password=""/>
+
+	<Resource name="test/populator" type="net.sf.opk.populator.JDBCPopulator" auth="Container"
+	          factory="net.sf.opk.populator.sql.SqlPopulatorFactory" sqlFile="src/main/config/database.sql"/>
+
+	<!-- NOTE: Tomcat 7.0.x does NOT support the JavaEE 6 JNDI namespaces java:global, java:app and java:module ! -->
+	<Resource name="jdbc/myApplicationDataSource" type="javax.sql.DataSource" auth="Container"
+	          factory="net.sf.opk.populator.DataSourceFactory"
+	          delegate="java:comp/env/jdbc/underlyingDataSource" populator="java:comp/env/test/populator"/>
+</Context>
++---

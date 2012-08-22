@@ -8,57 +8,78 @@
 
 JDBC Populator: Introduction
 
-  The JDBC populator is a library with implementations of <<<javax.sql.DataSource>>> and <<<javax.sql.XADataSource>>>
-  that also doubles as a {{{webfragment.html}JavaEE\ 6 web fragment}} (the latter is deprecated).
+  The JDBC populator is a library with one core interface: <<<net.sf.opk.populator.JDBCPopulator>>>,
+  which in turn has a single method: <<<populateDatabase(java.sql.Connection)>>>. Its purpose is to populate a
+  database just before it is used. As such, it can help to build an Instant Developer Experience.
 
-* Data Sources
+  It also doubles as a {{{webfragment.html}JavaEE\ 6 web fragment}}, though this is deprecated and will be removed in
+   the future.
+
+  In order to make this all work, the library also contains several implementations of this interface, als also
+  implementations of <<<javax.sql.DataSource>>> and <<<javax.sql.XADataSource>>>.
+
+* Data Sources; GlassFish
 
   As an example says more than a long explanation, the following example is a <<<glassfish-resources.xml>>> file
   that defines both an XA and a non-XA data source, both of which use a <<<net.sf.opk.populator.JDBCPopulator>>> to
   fill their respective databases.
 
+  There are examples the {{{other-containers.html}other containers}}.
+
 +---
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN"
-        "http://glassfish.org/dtds/glassfish-resources_1_5.dtd">
+                "http://glassfish.org/dtds/glassfish-resources_1_5.dtd">
 <resources>
     <!--
-    Local DataSource.
+    Underlying Local DataSource
     -->
-    <jdbc-connection-pool name="NonXAPool" datasource-classname="net.sf.opk.populator.PopulatingDataSource"
-                          connection-validation-method="meta-data" is-connection-validation-required="true">
-        <property name="Populator" value="test/populator"/>
-        <property name="Delegate" value="jdbc/__default"/>
+    <jdbc-connection-pool name="UnderlyingPool" datasource-classname="org.hsqldb.jdbc.JDBCDataSource"
+                          non-transactional-connections="true">
+        <property name="Url" value="jdbc:hsqldb:mem:MyApplicationDB"/>
+        <property name="User" value="sa"/>
+        <property name="Password" value=""/>
     </jdbc-connection-pool>
-    <jdbc-resource pool-name="NonXAPool" jndi-name="jdbc/populatingDataSource"/>
+    <jdbc-resource pool-name="UnderlyingPool" jndi-name="jdbc/underlyingDataSource"/>
 
     <!--
-    XA DataSource.
+    Underlying XA DataSource
     -->
-    <jdbc-connection-pool name="XAPool" datasource-classname="net.sf.opk.populator.PopulatingXADataSource"
-                          connection-validation-method="meta-data" is-connection-validation-required="true">
-        <property name="Populator" value="test/populator"/>
-        <property name="Delegate" value="jdbc/__default_xa"/>
+    <jdbc-connection-pool name="UnderlyingPool" datasource-classname="org.hsqldb.jdbc.JDBCXADataSource"
+                          non-transactional-connections="true">
+        <property name="Url" value="jdbc:hsqldb:mem:MyApplicationDB"/>
+        <property name="User" value="sa"/>
+        <property name="Password" value=""/>
     </jdbc-connection-pool>
-    <jdbc-resource pool-name="XAPool" jndi-name="jdbc/populatingXADataSource"/>
+    <jdbc-resource pool-name="UnderlyingPool" jndi-name="jdbc/underlyingXADataSource"/>
 
     <!--
     JDBC Populator
     -->
     <custom-resource jndi-name="test/populator" res-type="net.sf.opk.populator.JDBCPopulator"
                      factory-class="net.sf.opk.populator.sql.SqlPopulatorFactory">
-        <property name="FileName" value="src/test/config/import.sql"/>
+        <property name="sqlFile" value="src/main/config/database.sql"/>
     </custom-resource>
 
     <!--
-    XA variation of the default the embedded DataSource named jdbc/__default, as defined in Embedded GlassFish.
+    Local DataSource for use by your application
     -->
-    <jdbc-connection-pool name="DerbyXAPool" datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource"
-                          is-isolation-level-guaranteed="false" res-type="javax.sql.XADataSource">
-        <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/embedded_xa_default"/>
-        <property name="connectionAttributes" value=";create=true"/>
+    <jdbc-connection-pool name="LocalPool" datasource-classname="net.sf.opk.populator.PopulatingDataSource"
+                          connection-validation-method="meta-data" is-connection-validation-required="true">
+        <property name="PopulatorName" value="test/populator"/>
+        <property name="DelegateName" value="jdbc/underlyingDataSource"/>
     </jdbc-connection-pool>
-    <jdbc-resource pool-name="DerbyXAPool" jndi-name="jdbc/__default_xa"/>
+    <jdbc-resource pool-name="LocalPool" jndi-name="jdbc/myApplicationDataSource"/>
+
+    <!--
+    XA DataSource for use by your application
+    -->
+    <jdbc-connection-pool name="LocalPool" datasource-classname="net.sf.opk.populator.PopulatingXADataSource"
+                          connection-validation-method="meta-data" is-connection-validation-required="true">
+        <property name="PopulatorName" value="test/populator"/>
+        <property name="DelegateName" value="jdbc/underlyingXADataSource"/>
+    </jdbc-connection-pool>
+    <jdbc-resource pool-name="LocalPool" jndi-name="jdbc/myApplicationXADataSource"/>
 </resources>
 +---
 
@@ -68,7 +89,7 @@ JDBC Populator: Introduction
   populated upon first use. This means that if you start the application, for example by using the
   {{{../embedded-glassfish-web-plugin/}Embedded GlassFish Web Plugin}}, your application will have data available.
 
-  Additionally, the <<<JDBCPopulator>>> can also populate our EJB component tests:
+  Additionally, the <<<JDBCPopulator>>> can also populate our EJB component tests. Using JavaEE 6, you can use:
 
 +---
 @DataSourceDefinition(name="java:global/MyApp/MyDataSource", ...)
