@@ -8,24 +8,12 @@
 
 Other JNDI Containers
 
-  In addidion to GlassFish, JDBC Populator also supports other JNDI implementations. It has been tested on Tomcat 7.0
-  and Jetty 8.1, and thus should work in any situation. The reason is that GlassFish,
-  Tomcat and Jetty have vastly different methods of populating their JNDI namespace.
+  In addition to GlassFish, JDBC Populator also supports other JNDI implementations. It has also been tested on
+  Tomcat 7.0 and Jetty 8.1. The JDBC Populator should also work (but has <em>not</em> been tested) on JBoss, WebLogic,
+  WebSphere and Resin.
 
-  In short:
-
-  * With Jetty, the JNDI configuration describes how to instantiate the <<<DataSource>>> and <<<JDBCPopulator>>>
-  directly.
-
-  * With GlasFish, you specify the class names and some property values (primitives, wrappers and String only). The
-  properties are the JNDI names of the required objects.
-
-  * With Tomcat, the <<<ObjectFactory>>> implementations allow a fully custom JNDI setup.
-
-  []
-
-  So whether your favorite container used Java Beans directly, prefers an <<<ObjectFactory>>> or anything in between,
-  it's possible.
+  The only containers that are specifically not supported are those that cannot create generic JavaBean resources in
+  JNDI without the help of a custom JNDI <<<ObjectFactory>>>.
 
 
 * Jetty
@@ -38,7 +26,7 @@ Example <<<jetty-env.xml>>>:
 <?xml version="1.0"  encoding="ISO-8859-1"?>
 <!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
 <Configure class="org.eclipse.jetty.webapp.WebAppContext">
-	<New id="underlyingDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+	<New id="underlyingLocalDataSource" class="org.apache.commons.dbcp.BasicDataSource">
 		<Set name="driverClassName">org.hsqldb.jdbcDriver</Set>
 		<Set name="url">jdbc:hsqldb:mem:TestDB</Set>
 		<Set name="username">sa</Set>
@@ -48,8 +36,19 @@ Example <<<jetty-env.xml>>>:
 		<Set name="minIdle">5</Set>
 	</New>
 
-	<New id="populator" class="net.sf.opk.populator.sql.FileSqlPopulator">
+	<New id="filePopulator" class="net.sf.opk.populator.sql.FileSqlPopulator">
 		<Arg>src/main/config/database.sql</Arg>
+	</New>
+	<New id="directoryPopulator" class="net.sf.opk.populator.sql.DirectorySqlPopulator">
+		<Arg>src/main/config/db-updates</Arg>
+	</New>
+	<New id="populator" class="net.sf.opk.populator.CompositeJDBCPopulator">
+		<Call name="addPopulator">
+			<Arg><Ref id="filePopulator"/></Arg>
+		</Call>
+		<Call name="addPopulator">
+			<Arg><Ref id="directoryPopulator"/></Arg>
+		</Call>
 	</New>
 
 	<New class="org.eclipse.jetty.plus.jndi.Resource">
@@ -80,12 +79,16 @@ Example <<<context.xml>>>:
 	          type="javax.sql.DataSource" auth="Container" driverClassName="org.hsqldb.jdbcDriver"
 	          url="jdbc:hsqldb:mem:TestDB" username="sa" password=""/>
 
-	<Resource name="test/populator" type="net.sf.opk.populator.JDBCPopulator" auth="Container"
-	          factory="net.sf.opk.populator.sql.SqlPopulatorFactory" sqlFile="src/main/config/database.sql"/>
+    <Resource name="test/populator-file" type="net.sf.opk.populator.sql.FileSqlPopulator" auth="Container"
+              factory="org.apache.naming.factory.BeanFactory" fileName="src/main/config/database.sql"/>
+    <Resource name="test/populator-dir" type="net.sf.opk.populator.sql.DirectorySqlPopulator" auth="Container"
+              factory="org.apache.naming.factory.BeanFactory" directoryName="src/main/config/db-updates"/>
+    <Resource name="test/populator" type="net.sf.opk.populator.CompositeJDBCPopulator" auth="Container"
+              factory="org.apache.naming.factory.BeanFactory" populatorNames="test/populator-file test/populator-dir"/>
 
 	<!-- NOTE: Tomcat 7.0.x does NOT support the JavaEE 6 JNDI namespaces java:global, java:app and java:module ! -->
-	<Resource name="jdbc/myApplicationDataSource" type="javax.sql.DataSource" auth="Container"
-	          factory="net.sf.opk.populator.DataSourceFactory"
-	          delegate="java:comp/env/jdbc/underlyingDataSource" populator="java:comp/env/test/populator"/>
+    <Resource name="jdbc/applicationDataSource" type="net.sf.opk.populator.PopulatingDataSource" auth="Container"
+              factory="org.apache.naming.factory.BeanFactory"
+              delegateName="java:comp/env/jdbc/underlyingDataSource" populatorName="java:comp/env/test/populator"/>
 </Context>
 +---

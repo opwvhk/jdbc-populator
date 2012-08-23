@@ -40,10 +40,30 @@ public class FileSqlPopulator extends SqlPopulator
 
 	/**
 	 * Create a FileSqlPopulator.
+	 */
+	public FileSqlPopulator()
+	{
+		// Nothing to do.
+	}
+
+
+	/**
+	 * Create a FileSqlPopulator.
 	 *
 	 * @param fileName the name of the file to read SQL statements from
 	 */
 	public FileSqlPopulator(String fileName)
+	{
+		this.fileName = fileName;
+	}
+
+
+	/**
+	 * Set the name of the file to read SQL statements from.
+	 *
+	 * @param fileName the name of the file to read SQL statements from
+	 */
+	public void setFileName(String fileName)
 	{
 		this.fileName = fileName;
 	}

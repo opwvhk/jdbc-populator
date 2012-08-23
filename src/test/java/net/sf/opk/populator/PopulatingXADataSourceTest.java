@@ -154,8 +154,8 @@ public class PopulatingXADataSourceTest
 	@Test(expected = SQLException.class)
 	public void testGetConnection2a() throws SQLException, IOException, NamingException
 	{
-		datasource.setDelegate(delegate);
-		// Use lookup here so it's tested. Set a populator directly further on for readability.
+		// Use lookup here so it's tested. Set objects elsewhere for readability.
+		expect(mockContext.lookup(DELEGATE_JNDI_NAME)).andReturn(delegate);
 		expect(mockContext.lookup(POPULATOR_JNDI_NAME)).andReturn(populator);
 
 		XAConnection xaConnection = createMock(XAConnection.class);

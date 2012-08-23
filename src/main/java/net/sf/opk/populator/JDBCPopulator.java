@@ -20,23 +20,13 @@ import java.sql.SQLException;
 /**
  * <p>Interface for JDBC populators. These actually fill the database.</p>
  *
- * <p>When the populator is called depends on the caller:</p><ul>
- *
- * <li>{@link ContextListener} uses a {@link JDBCPopulator}, and calls it right after the application is initialized.
- * This means that the persistence unit of the application has been set up (there must be exactly one), and thus that
- * the database structure is already in place.</li>
- *
- * <li>{@link PopulatingXADataSource} calls its JDBC populator just before the first connection is returned. This
- * happens before any persistence unit is called. If the database is an in-memory database, it'll be empty.</li>
- *
- * </ul>
+ * <p>The populator is called by its data source just before the first connection is returned. This usually happens
+ * before any persistence unit is called. If the database is an in-memory database, it'll be empty.</p>
  *
  * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
 public interface JDBCPopulator
 {
-	// TODO: Create a composite JDBCPopulator implementation
-
 	/**
 	 * Populate the database.
 	 *

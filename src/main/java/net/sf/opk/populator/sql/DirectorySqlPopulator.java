@@ -32,10 +32,30 @@ public class DirectorySqlPopulator extends SqlPopulator
 
 	/**
 	 * Create a DirectorySqlPopulator.
+	 */
+	public DirectorySqlPopulator()
+	{
+		// Nothing to do.
+	}
+
+
+	/**
+	 * Create a DirectorySqlPopulator.
 	 *
 	 * @param directory the name of the directory to read files with SQL statements from
 	 */
 	public DirectorySqlPopulator(String directory)
+	{
+		this.directory = directory;
+	}
+
+
+	/**
+	 * Set the name of the directory to read files with SQL statements from.
+	 *
+	 * @param directory the name of the directory to read files with SQL statements from
+	 */
+	public void setDirectoryName(String directory)
 	{
 		this.directory = directory;
 	}
