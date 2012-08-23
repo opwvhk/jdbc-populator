@@ -3,6 +3,7 @@ package net.sf.opk.populator.sql;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.junit.Test;
@@ -26,7 +27,8 @@ public class FileSqlPopulatorTest extends DatabaseTestBase
 	@Test(expected = SQLException.class)
 	public void testWithMissingFile() throws IOException, SQLException
 	{
-		FileSqlPopulator populator = new FileSqlPopulator("missingFile");
+		FileSqlPopulator populator = new FileSqlPopulator();
+		populator.setFileName("missingFile");
 
 		populator.populateDatabase(getConnectionForTest());
 
@@ -49,7 +51,7 @@ public class FileSqlPopulatorTest extends DatabaseTestBase
 	@Test
 	public void testInternalsWithNullStream() throws IOException, SQLException
 	{
-		FileSqlPopulator populator = new FileSqlPopulator("anything");
+		FileSqlPopulator populator = new FileSqlPopulator();
 
 		populator.populateFromStream(null, getConnectionForTest());
 
@@ -60,7 +62,7 @@ public class FileSqlPopulatorTest extends DatabaseTestBase
 	@Test
 	public void testInternalsWithFailingStream() throws IOException, SQLException
 	{
-		FileSqlPopulator populator = new FileSqlPopulator("anything");
+		FileSqlPopulator populator = new FileSqlPopulator();
 
 		InputStream stream = createMock(InputStream.class);
 		expect(stream.read(anyObject(byte[].class), anyInt(), anyInt())).andThrow(new IOException("oops")).once();
@@ -72,4 +74,18 @@ public class FileSqlPopulatorTest extends DatabaseTestBase
 		populator.populateFromStream(stream, getConnectionForTest());
 	}
 
+
+	@Test(expected = SQLException.class)
+	public void testInternalsWithFailingConnection() throws IOException, SQLException
+	{
+		FileSqlPopulator populator = new FileSqlPopulator();
+
+		InputStream stream = createMock(InputStream.class);
+		Connection connection = createMock(Connection.class);
+		expect(connection.createStatement()).andThrow(new SQLException("oops")).once();
+
+		replay(stream, connection);
+
+		populator.populateFromStream(stream, connection);
+	}
 }

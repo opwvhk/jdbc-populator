@@ -12,9 +12,6 @@ JDBC Populator: Introduction
   which in turn has a single method: <<<populateDatabase(java.sql.Connection)>>>. Its purpose is to populate a
   database just before it is used. As such, it can help to build an Instant Developer Experience.
 
-  It also doubles as a {{{webfragment.html}JavaEE\ 6 web fragment}}, though this is deprecated and will be removed in
-   the future.
-
   In order to make this all work, the library also contains several implementations of this interface, als also
   implementations of <<<javax.sql.DataSource>>> and <<<javax.sql.XADataSource>>>.
 
@@ -22,9 +19,9 @@ JDBC Populator: Introduction
 
   As an example says more than a long explanation, the following example is a <<<glassfish-resources.xml>>> file
   that defines both an XA and a non-XA data source, both of which use a <<<net.sf.opk.populator.JDBCPopulator>>> to
-  fill their respective databases.
+  fill their respective databases. All possible uses of a <<<net.sf.opk.populator.JDBCPopulator>>> are demonstrated.
 
-  There are examples the {{{other-containers.html}other containers}}.
+  The same example (except the XA part) is also available for {{{other-containers.html}other containers}}.
 
 +---
 <?xml version="1.0" encoding="UTF-8"?>
@@ -54,12 +51,20 @@ JDBC Populator: Introduction
     <jdbc-resource pool-name="UnderlyingPool" jndi-name="jdbc/underlyingXADataSource"/>
 
     <!--
-    JDBC Populator
+    JDBC Populators
     -->
-    <custom-resource jndi-name="test/populator" res-type="net.sf.opk.populator.JDBCPopulator"
-                     factory-class="net.sf.opk.populator.sql.SqlPopulatorFactory">
-        <property name="sqlFile" value="src/main/config/database.sql"/>
-    </custom-resource>
+	<custom-resource jndi-name="test/populator-file" res-type="net.sf.opk.populator.sql.FileSqlPopulator"
+	                 factory-class="org.glassfish.resources.custom.factory.JavaBeanFactory">
+		<property name="fileName" value="src/main/config/database.sql"/>
+	</custom-resource>
+	<custom-resource jndi-name="test/populator-dir" res-type="net.sf.opk.populator.sql.DirectorySqlPopulator"
+	                 factory-class="org.glassfish.resources.custom.factory.JavaBeanFactory">
+		<property name="directoryName" value="src/main/config/db-updates"/>
+	</custom-resource>
+	<custom-resource jndi-name="test/populator" res-type="net.sf.opk.populator.CompositeJDBCPopulator"
+	                 factory-class="org.glassfish.resources.custom.factory.JavaBeanFactory">
+		<property name="populatorNames" value="test/populator-file test/populator-dir"/>
+	</custom-resource>
 
     <!--
     Local DataSource for use by your application

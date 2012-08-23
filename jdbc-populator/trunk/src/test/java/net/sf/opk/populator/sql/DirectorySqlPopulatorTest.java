@@ -38,7 +38,8 @@ public class DirectorySqlPopulatorTest extends DatabaseTestBase
 	@Test(expected = SQLException.class)
 	public void testWithMissingDirectory() throws IOException, SQLException
 	{
-		DirectorySqlPopulator populator = new DirectorySqlPopulator("missingDirectory");
+		DirectorySqlPopulator populator = new DirectorySqlPopulator();
+		populator.setDirectoryName("missingDirectory");
 
 		populator.populateDatabase(getConnectionForTest());
 
