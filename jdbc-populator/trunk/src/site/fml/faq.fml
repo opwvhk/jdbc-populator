@@ -2,91 +2,64 @@
 <faqs xmlns="http://maven.apache.org/FML/1.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
       title="Frequently Asked Questions" toplink="false">
-	<part id="datasources">
-		<title>Data Sources</title>
-		<faq id="differences">
+	<part id="populators">
+		<title>JDBC Populators</title>
+		<faq id="combine">
 			<question>
-				Is the
-				<code>JDBCPopulator</code>
-				used in the same way as with the (deprecated) context listener?
+				Can I combine multiple <code>JDBCPopulator</code>s?
 			</question>
 			<answer>
 				<p>
-					No. The context listener is started after all persistence units are initialized. The DataSource for
-					the persistence units have been used before that.
+					Yes. This is what the <code>net.sf.opk.populator.CompositeJDBCPopulator</code> is for.
 				</p>
+			</answer>
+		</faq>
+		<faq id="directory">
+			<question>
+				Does the <code>net.sf.opk.populator.sql.DirectorySqlPopulator</code> scan a directory
+				recursively?
+			</question>
+			<answer>
 				<p>
-					So while the context listener called the <code>JDBCPopulator</code> after the database structure
-					has been verified, the data sources call the <code>JDBCPopulator</code> before it's first use.
+					No. It reads the directory contents, assuming all entries to be files (not a subdirectory).
+				</p>
+			</answer>
+		</faq>
+		<faq id="fileOrder">
+			<question>
+				In what order does the <code>net.sf.opk.populator.sql.DirectorySqlPopulator</code> execute the SQL
+				files?
+			</question>
+			<answer>
+				<p>
+					In lexicographic order, using <code>String.compareTo(String)</code>.
+				</p>
+			</answer>
+		</faq>
+		<faq id="nonSQL">
+			<question>
+				Do you plan to add a non-SQL populator, say for Liquibase?
+			</question>
+			<answer>
+				<p>
+					No. Although it would be a good idea, I do not need it. Such a populator would need to be in
+					another project anyway, to prevent forcing people to have unwanted dependencies on their classpath.
 				</p>
 			</answer>
 		</faq>
 	</part>
-	<part id="context_listener">
-		<title>Context Listener</title>
-		<faq id="deprecation">
-			<question>Why is the context listener deprecated?</question>
+	<part id="datasources">
+		<title>Data Sources</title>
+		<faq id="requirements">
+			<question>
+				What do I need to use <code>net.sf.opk.populator.PopulatingDataSource</code> or
+				<code>net.sf.opk.populator.PopulatingXADataSource</code>?
+			</question>
 			<answer>
 				<p>
-					Because it cannot be used with Maven in a way that is compatible with running from maven (embedded)
-					and at the same time allow unit/integration tests to start an embedded EJB container.
+					A working <code>javax.sql.DataSource</code> or <code>javax.sql.XADataSource</code>, respectively.
+					The versions from the JDBC Populator will reuse it, including its pooling capabilities.
 				</p>
-				<p>
-					This is due to the fact that in order to keep the production version clean, the context listener
-					must be used in test scope. However, running an embedded EJB container in test scope is not
-					compatible with the Java EE API in provided scope. Running an embedded container then causes the
-					duplicate classes (by spec.) on the classpath to start duplicate/conflicting services.
-				</p>
-			</answer>
-		</faq>
-		<faq id="configuration">
-			<question>Are there any configuration options for the context listener?</question>
-			<answer>
-				<p>No. This is on purpose.</p>
-				<p>
-					In fact, the web fragment nor the data sources this artifact provides are meant to be used in a
-					production system. Their intended use is to populate an in-memory database during development and
-					testing. In such cases, the environment is controlled so much that configuration is hardly ever
-					needed.
-				</p>
-			</answer>
-		</faq>
-		<faq id="multiple_persistence_units">
-			<question>Can the context listener handle multiple persistence units?</question>
-			<answer>
-				<p>
-					No. Two different persistence units most likely use two different databases (and datasources). They
-					would therefore also require two different import files. However, as the context listener was
-					designed to be a drop-in replacement for <code>import.sql</code> + Hibernate, this is not an
-					option.
-				</p>
-			</answer>
-		</faq>
-		<faq id="plain_datasources">
-			<question>Can the context listener handle datasources that are not tied to a persistence unit?</question>
-			<answer>
-				<p>
-					No. In this situation it is not possible to detect the datasource. The reason is that application
-					servers try to be 'helpful' by providing a few datasources of their own. GlassFish, for example,
-					provides datasources named <code>jdbc/__default</code> and <code>jdbc/__TimerPool</code> (and even
-					though the latter is not supposed to be used, it is still available in the JNDI namespace of web
-					applications).
-				</p>
-			</answer>
-		</faq>
-		<faq id="import_sql">
-			<question>Does the context listener use import.sql like Hibernate uses import.sql?</question>
-			<answer>
-				<p>
-					Almost. These are the differences:
-				</p>
-				<ol>
-					<li>
-						Unlike Hibernate, the context listener <em>can</em> handle SQL statements that span multiple
-						lines. Only multiple statements per line are not supported.
-					</li>
-					<li>The file <code>import.sql</code> is always executed; not only when the schema is created.</li>
-				</ol>
 			</answer>
 		</faq>
 	</part>
