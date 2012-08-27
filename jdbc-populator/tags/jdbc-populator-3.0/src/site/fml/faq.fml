@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faqs xmlns="http://maven.apache.org/FML/1.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
+      title="Frequently Asked Questions" toplink="false">
+	<part id="populators">
+		<title>JDBC Populators</title>
+		<faq id="combine">
+			<question>
+				Can I combine multiple <code>JDBCPopulator</code>s?
+			</question>
+			<answer>
+				<p>
+					Yes. This is what the <code>net.sf.opk.populator.CompositeJDBCPopulator</code> is for.
+				</p>
+			</answer>
+		</faq>
+		<faq id="directory">
+			<question>
+				Does the <code>net.sf.opk.populator.sql.DirectorySqlPopulator</code> scan a directory
+				recursively?
+			</question>
+			<answer>
+				<p>
+					No. It reads the directory contents, assuming all entries to be files (not a subdirectory).
+				</p>
+			</answer>
+		</faq>
+		<faq id="fileOrder">
+			<question>
+				In what order does the <code>net.sf.opk.populator.sql.DirectorySqlPopulator</code> execute the SQL
+				files?
+			</question>
+			<answer>
+				<p>
+					In lexicographic order, using <code>String.compareTo(String)</code>.
+				</p>
+			</answer>
+		</faq>
+		<faq id="nonSQL">
+			<question>
+				Do you plan to add a non-SQL populator, say for Liquibase?
+			</question>
+			<answer>
+				<p>
+					No. Although it would be a good idea, I do not need it. Such a populator would need to be in
+					another project anyway, to prevent forcing people to have unwanted dependencies on their classpath.
+				</p>
+			</answer>
+		</faq>
+	</part>
+	<part id="datasources">
+		<title>Data Sources</title>
+		<faq id="requirements">
+			<question>
+				What do I need to use <code>net.sf.opk.populator.PopulatingDataSource</code> or
+				<code>net.sf.opk.populator.PopulatingXADataSource</code>?
+			</question>
+			<answer>
+				<p>
+					A working <code>javax.sql.DataSource</code> or <code>javax.sql.XADataSource</code>, respectively.
+					The versions from the JDBC Populator will reuse it, including its pooling capabilities.
+				</p>
+			</answer>
+		</faq>
+	</part>
+</faqs>
