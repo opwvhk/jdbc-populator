@@ -15,6 +15,38 @@ JDBC Populator: Introduction
   In order to make this all work, the library also contains several implementations of this interface, als also
   implementations of <<<javax.sql.DataSource>>> and <<<javax.sql.XADataSource>>>.
 
+
+* Usage
+
+  To use the JDBC populator, add it as a dependency to your application server (or servlet container). Also, don't
+  forget to include a database. Using Maven and an embedded application server, you can do that like this:
+
++---
+<plugin>
+    <groupId>net.sf.opk</groupId>
+    <artifactId>embedded-glassfish-web-plugin</artifactId>
+    <version>1.3</version>
+    <configuration>
+        <glassFishResources>${project.build.configDirectory}/glassfish-resources.xml</glassFishResources>
+    </configuration>
+    <dependencies>
+        <dependency>
+			<groupId>net.sf.opk</groupId>
+			<artifactId>jdbc-populator</artifactId>
+			<version>3.0</version>
+        </dependency>
+        <dependency>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>2.2.8</version>
+        </dependency>
+    </dependencies>
+</plugin>
++---
+
+  The file mentioned, <<<glassfish-resources.xml>>>, has content as explained in the next section.
+
+
 * Data Sources; GlassFish
 
   As an example says more than a long explanation, the following example is a <<<glassfish-resources.xml>>> file
@@ -114,6 +146,7 @@ public MyCodeTest
     }
 }
 +---
+
 
 * Conclusion
 
