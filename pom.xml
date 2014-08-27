@@ -20,7 +20,6 @@
 		<artifactId>opk-parent</artifactId>
 		<version>3</version>
 	</parent>
-	<groupId>net.sf.opk</groupId>
 	<artifactId>jdbc-populator</artifactId>
 	<packaging>jar</packaging>
 	<version>3.1-SNAPSHOT</version>
@@ -37,7 +36,7 @@
 		<url>http://svn.code.sf.net/p/opk/code/jdbc-populator/trunk/</url>
 	</scm>
 	<properties>
-		<jdk.version>1.6</jdk.version>
+		<jdk.version>1.7</jdk.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
